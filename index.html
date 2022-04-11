@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test canvas</title>
+    <style>
+        #canvas {
+            background-color: goldenrod;
+            /* height: 400px; */
+            /* width: 400px; */
+        }
+
+        button,
+        input {
+            margin: 10px;
+            height: 28px;
+            width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas">設備不支持 canvas</canvas>
+    <hr />
+    <input id='randomPositionAmount' type="text"> <button id="randomPositionBtn">Random Position</button><br />
+    <button id='calculateShortestPathBtn'>計算走訪最短路徑</button>
+    <button id='resetBtn'>重置</button>
+    <script>
+        (() => {
+            // get and setting canvas tag 
+            const canvas = document.getElementById('canvas')
+            canvas.width = 400;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d')
+
+            // create store point list
+            let pointList = []
+            // 滑鼠在畫布中按下
+            canvas.addEventListener('mouseup', event => {
+                // // test ==============
+                // console.log('X: '+ event.offsetX,'; Y: ' + event.offsetY)
+                // console.log(event)
+
+                // 在點擊的 x y 座標
+                const { offsetX: x, offsetY: y } = event
+
+                // 將點擊座標加入 pointList 中
+                pointList.push([x, y])
+
+                // 在畫布中劃出點擊點
+                drawPoint(ctx, x, y)
+            })
+
+            // 綁定隨機位址點擊事件
+            const randomPositionBtn = document.getElementById('randomPositionBtn')
+            randomPositionBtn.addEventListener('click', event => {
+                const randomPositionAmount = document.getElementById('randomPositionAmount').value
+                for (let i = 0; i < randomPositionAmount; i++) {
+                    // 隨機x y軸
+                    const x = Math.random() * (canvas.width - 1)
+                    const y = Math.random() * (canvas.height - 1)
+                    // 將點擊座標加入 pointList 中
+                    pointList.push([x, y])
+                    // 在畫布中劃出點擊點
+                    drawPoint(ctx, x, y)
+                }
+
+            })
+
+            // 綁定計算最點路徑按鈕點擊事件
+            const calculateShortestPathBtn = document.getElementById('calculateShortestPathBtn');
+            calculateShortestPathBtn.addEventListener('click', event => {
+                // test ===================
+                // console.log('linkPointFn')
+                // console.log(pointList);
+
+                // drawLine(ctx, pointList[0])
+                // for (let i = 1; i < pointList.length; i++) {
+                //     drawLine(ctx, pointList[i - 1], pointList[i])
+                // }
+
+                // const distance = claculateTheDistanceBetweenTwoOption(pointList[0], pointList[1]);
+                // console.log('@distance: ' + distance)
+                antAlgorithm(pointList)
+            })
+
+            // 綁定重置按鈕點擊事件
+            const resetBtn = document.getElementById('resetBtn')
+            resetBtn.addEventListener('click', event => {
+                // 清空畫布
+                clearCanvas();
+                // 清空已標記的點
+                pointList = [];
+            })
+
+
+
+            // 清空畫布
+            const clearCanvas = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // 畫點
+            const drawPoint = (canvas, x, y) => {
+                canvas.beginPath();
+                canvas.arc(x, y, 2, 0, 2 * Math.PI)
+                canvas.stroke();
+            }
+
+            // 畫線
+            const drawLine = (canvas, startPosition, endPosition) => {
+                const { [0]: startX, [1]: startY } = startPosition
+                const { [0]: endX, [1]: endY } = endPosition
+                // test ================
+                // console.log('@drawLine: ', startX, startY)
+
+                canvas.moveTo(startX, startY)
+                canvas.lineTo(endX, endY)
+                canvas.stroke()
+            }
+
+            // 螞蟻演算法
+            const antAlgorithm = (positionList) => {
+                // test ==================
+                console.log('antAlgorithm')
+
+                // 設定 ant algorithm 參數
+                // 通常 beta > alpha 較接近最佳解
+                const alpha = 1; // 賀爾蒙權重 1, 1
+                const beta = 3; // 距離權重 5, 2
+                const initialHormones = 1 // 初始賀爾蒙 1, 10
+                const evaporation = 0.1 // 賀爾蒙衰退係，通常介於 0.8 ~ 0.9 0.7, 0.8
+                const Q = 1; // 賀爾蒙強度
+
+                const maxRound = 200; // 10
+
+                // build hormonse Matrix
+                // 創建賀爾蒙矩陣
+                let hormonseMatrix = []
+                for (let i = 0; i < positionList.length; i++) {
+                    hormonseMatrix[i] = []
+                }
+                // 設定賀爾蒙矩陣初始值
+                (() => {
+                    for (let i = 0; i < positionList.length; i++) {
+                        for (let j = 0; j < positionList.length; j++) {
+                            hormonseMatrix[i][j] = initialHormones
+                        }
+                    }
+                })()
+
+                // builddistanceMatrix
+                // 創建距離矩陣
+                let distanceMatrix = [];
+                // 計算距離矩陣數值
+                (() => {
+                    // 機算兩程式間的距離
+                    const claculateTheDistanceBetweenTwoOption = (positionOne, positionTwo) => {
+                        const { [0]: oneX, [1]: oneY } = positionOne
+                        const { [0]: twoX, [1]: twoY } = positionTwo
+                        return Math.sqrt(Math.pow(twoX - oneX, 2) + Math.pow(twoY - oneY, 2))
+                    }
+                    for (let i = 0; i < positionList.length; i++) {
+                        distanceMatrix[i] = []
+                        for (let j = 0; j < positionList.length; j++) {
+                            distanceMatrix[i][j] = claculateTheDistanceBetweenTwoOption(positionList[i], positionList[j])
+                        }
+                    }
+                })()
+
+                // 做輪盤賭所擇(輪盤法)
+                let doRouletteWheelSelection = (candidatePositionProbabilityList) => {
+                    const sumProbability = candidatePositionProbabilityList.reduce((previusValue, currentValue) => {
+                        return previusValue += currentValue
+                    }, 0)
+                    const probabilityList = candidatePositionProbabilityList.map(item => item / sumProbability)
+
+                    let randomNumber = Math.random()
+                    // console.log(randomNumber)
+                    let sumProb = 0
+                    for (let i = 0; i < probabilityList.length; i++) {
+                        sumProb += probabilityList[i]
+                        if (sumProb >= randomNumber) return i
+                    }
+                }
+
+                // 螞蟻數量
+                const antAmount = positionList.length
+
+                let bestRoute = []
+                let bestRouteLength = Number.MAX_SAFE_INTEGER
+
+                for (let i = 0; i < maxRound; i++) { // 預設循環上限
+                    // 創建一個列表存儲每隻螞蟻的走訪路徑
+                    let antResultList = []
+                    for (let j = 0; j < antAmount; j++) { // 遍歷全部的螞蟻
+                        // 複製一份走訪位置到候選位置陣列
+                        let candidatePositionIndexList = positionList.map((item, index) => index)
+                        // 雖機選出 positionList 中一個位置當作出發點
+                        const startPositionIndex = Math.floor(Math.random() * candidatePositionIndexList.length)
+                        let currentAntRoute = [candidatePositionIndexList[startPositionIndex]]
+                        // 在候選位置中刪除選到的起始點
+                        let currentPositionIndex = candidatePositionIndexList.splice(startPositionIndex, 1)[0]
+
+
+                        // test ===================
+                        // console.log(candidatePositionList)
+                        // console.log(currentAntRoute)
+                        // console.log(positionList)
+                        // console.log(candidatePositionList === positionList)
+                        // console.log( j + ': '+currentAntRoute);
+
+                        for (let k = 0; k < positionList.length; k++) { // 遍歷全部可疑移動的城市
+                            // 每隻螞蟻跟根據概率移動
+                            // 機算與候選位置個機率值
+                            candidatePositionProbabilityList = candidatePositionIndexList.map(item =>
+                                Math.pow(hormonseMatrix[currentPositionIndex][item], alpha) *
+                                Math.pow(distanceMatrix[currentPositionIndex][item], beta)
+                            )
+                            // 將下一個位置加入走訪列表
+                            const nextPositionxInCandidatePositionProbabilityListIndex = doRouletteWheelSelection(candidatePositionProbabilityList);
+                            currentAntRoute.push(candidatePositionIndexList[nextPositionxInCandidatePositionProbabilityListIndex])
+                            // 刪除候選列表中要前往的位置並將重定位置到要前往的位置
+                            currentPositionIndex = candidatePositionIndexList.splice(nextPositionxInCandidatePositionProbabilityListIndex, 1)[0]
+                            // console.log(nextPositionxInCandidatePositionProbabilityListIndex)
+                            // console.log(candidatePositionProbabilityList, '\n============')
+                        }
+                        // 終點與起點相連，完成一次旅行
+                        currentAntRoute[currentAntRoute.length - 1] = currentAntRoute[0]
+
+
+                        // 清空畫布
+                        // clearCanvas()
+                        // 計算每隻螞蟻的總路程L
+                        let sumRouteLength = 0;
+                        let k = 1
+                        for (; k < currentAntRoute.length; k++) {
+                            sumRouteLength += distanceMatrix[currentAntRoute[k - 1]][currentAntRoute[k]]
+
+                            // 畫當前收斂的路徑
+                            // 畫點
+                            // const { [0]: x, [1]: y } = positionList[currentAntRoute[k - 1]]
+                            // drawPoint(ctx, x, y)
+                            // // 畫線
+                            // drawLine(ctx, positionList[currentAntRoute[k]], positionList[currentAntRoute[k - 1]])
+                        }
+                        sumRouteLength += distanceMatrix[currentAntRoute[k - 1]][currentAntRoute[0]]
+
+
+                        // 將結果添加到螞蟻解果列表
+                        antResultList.push([currentAntRoute, sumRouteLength])
+                        // console.log(currentAntRoute)
+
+
+                    }
+
+                    // 賀爾蒙衰退
+                    for (let j = 0; j < hormonseMatrix.length; j++) {
+                        for (let k = 0; k < hormonseMatrix[0].length; k++) {
+                            hormonseMatrix[j][k] *= (1-evaporation)
+                        }
+                    }
+
+                    // 將每隻螞蟻結果更新至費洛蒙矩陣
+                    for (let j = 0; j < antResultList.length; j++) {
+                        const { [0]: resultRouteList, [1]: routeLength } = antResultList[j]
+                        // 更新最佳結果
+                        if (bestRouteLength >= routeLength) {
+                            bestRoute = [...resultRouteList]
+                            bestRouteLength = routeLength
+                        }
+
+                        // 計算賀爾蒙變量
+                        const hormoneBoost = Q / routeLength
+                        // console.log(hormoneBoost)
+
+                        // 更新費洛蒙矩陣
+                        // let k = 1
+                        // for (; k < resultRouteList.length; k++) {
+                        //     hormonseMatrix[resultRouteList[k - 1]][resultRouteList[k]] =
+                        //         hormonseMatrix[resultRouteList[k - 1]][resultRouteList[k]] * evaporation + hormoneBoost
+                        // }
+                        // // 更新最回到終點的費洛蒙矩陣
+                        // hormonseMatrix[resultRouteList[0]][resultRouteList[k-1]] =
+                        //         hormonseMatrix[resultRouteList[0]][resultRouteList[k-1]] * evaporation + hormoneBoost
+
+                        // 更新費洛蒙矩陣
+                        //賀爾蒙揮發
+                        let k = 1
+                        for (; k < resultRouteList.length; k++) {
+                            hormonseMatrix[resultRouteList[k - 1]][resultRouteList[k]] += hormoneBoost
+                        }
+                        // 更新最回到終點的費洛蒙矩陣
+                        hormonseMatrix[resultRouteList[k - 1]][resultRouteList[0]] += hormoneBoost
+                    }
+                    // 清空螞蟻結果列表，準備下一回合
+                    antResultList = []
+
+                }
+                // 畫出最佳解果
+                // 清空畫布
+                clearCanvas()
+                console.log(bestRoute)
+                for (let i = 1; i < bestRoute.length; i++) {
+                    // 畫點
+                    const { [0]: x, [1]: y } = positionList[bestRoute[i - 1]]
+                    drawPoint(ctx, x, y)
+                    // 畫線
+                    drawLine(ctx, positionList[bestRoute[i]], positionList[bestRoute[i - 1]])
+                }
+                console.log('@Best Length: ' + bestRouteLength)
+                console.log(hormonseMatrix)
+
+
+
+
+            }
+
+
+            // test ================
+            // const claculateTheDistanceBetweenTwoOption =(positionOne, positionTwo)=>{
+            //         const {[0]: oneX, [1]:oneY} = positionOne
+            //         const {[0]: twoX, [1]:twoY} = positionTwo
+            //         return Math.sqrt(Math.pow(twoX-oneX, 2) + Math.pow(twoY-oneY, 2))
+            //     }
+        })()
+    </script>
+</body>
+
+</html>
