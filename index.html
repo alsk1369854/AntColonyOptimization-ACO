@@ -5,56 +5,25 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
     <title>Ant Colony Optimization</title>
-    <style>
-        html,
-        body {
-            height: 100%;
-        }
-
-        html {
-            display: table;
-            margin: auto;
-        }
-
-        body {
-            display: table-cell;
-            vertical-align: middle;
-        }
-
-        #canvas {
-            border: 5px;
-            border-radius: 50px;
-            border-color: #666767;
-            border-style: solid;
-            background-color: #bcbcbc;
-
-            /* background-color: #4d5daa; */
-            /* height: 400px; */
-            /* width: 400px; */
-        }
-
-
-        button {
-            margin-top: 5px;
-            height: 25px;
-            width: 200px;
-        }
-
-        input {
-            width: 190px;
-        }
-    </style>
 </head>
 
 <body>
     <canvas id="canvas">設備不支持 canvas</canvas>
     <hr />
-    <p align="center" >
-        <input size="50" id='randomPositionAmount' type="text"> <button id="randomPositionBtn">Random
-            Position</button><br />
-        <button id='calculateShortestPathBtn'>計算走訪最短路徑</button>
-        <button id='resetBtn'>重置</button>
+    <div class="container">
+        <div>Total City: <samp id="totalCityValue">0</samp></div>
+        <div>Best Distance: <samp id="bestDistanceValue">0</samp></div>
+        <div class="item">
+            <input id='randomPositionAmount' value="10" size="28" type="text">
+            <button id="randomPositionBtn">Add Random
+                Position</button>
+        </div>
+        <div class="item">
+            <button id='calculateShortestPathBtn'>Calculate Shortest Path</button>
+            <button id='resetBtn'>Reset</button>
+        </div>
     </div>
     <script type="text/javascript" src="./index.js"></script>
 </body>

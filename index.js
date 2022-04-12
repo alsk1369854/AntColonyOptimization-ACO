@@ -15,12 +15,22 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     // 創建畫布操作工具
     var canvasTag = document.getElementById('canvas');
     var canvas = new _CanvasUtil2.default(canvasTag);
-    var ctx = canvas.getContext2D();
     canvas.setWidth(450);
     canvas.setHeight(400);
 
+    // 最佳路程顯示標籤
+    var bestDistanceValueTag = document.getElementById('bestDistanceValue');
+    // 總城市數顯示標籤
+    var totalCityValueTag = document.getElementById('totalCityValue');
+    var cityAmount = 0;
+
     // 存儲要走訪的城市
     var cityList = [];
+
+    var updateTotalCityValue = function updateTotalCityValue() {
+        cityAmount = cityList.length;
+        totalCityValueTag.innerHTML = cityAmount;
+    };
 
     // 綁定在畫布中的點擊事件
     canvasTag.addEventListener('mouseup', function (event) {
@@ -32,6 +42,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         cityList.push([x, y]);
         // 在畫布中劃出點擊點
         canvas.drawPoint(x, y);
+        // 更新總城市數
+        updateTotalCityValue();
     });
 
     // 綁定隨機位址點擊事件
@@ -47,6 +59,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             // 在畫布中劃出點擊點
             canvas.drawPoint(x, y);
         }
+        // 更新總城市數
+        updateTotalCityValue();
     });
 
     // 綁定計算最點路徑按鈕點擊事件
@@ -68,7 +82,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             canvas.drawLine(bestRoute[i - 1], bestRoute[i]);
             canvas.drawPoint(x, y);
         }
-        console.log(bestRouteLength);
+        bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2);
     });
 
     // 綁定重置按鈕點擊事件
@@ -78,6 +92,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         canvas.clearCanvas();
         // 清空已標記的點
         cityList = [];
+        // 更新總城市數
+        updateTotalCityValue();
+        // 更新最佳路徑距離
+        bestDistanceValueTag.innerHTML = 0;
     });
 })();
 },{"./modules/AOC":2,"./modules/CanvasUtil":3}],2:[function(require,module,exports){

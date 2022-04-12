@@ -8,8 +8,19 @@ import AOC from './modules/AOC'
     canvas.setWidth(450)
     canvas.setHeight(400)
 
+    // 最佳路程顯示標籤
+    const bestDistanceValueTag = document.getElementById('bestDistanceValue')
+    // 總城市數顯示標籤
+    const totalCityValueTag = document.getElementById('totalCityValue')
+    let cityAmount = 0
+
     // 存儲要走訪的城市
     let cityList = []
+
+    const updateTotalCityValue =()=>{
+        cityAmount = cityList.length
+        totalCityValueTag.innerHTML = cityAmount
+    }
 
     // 綁定在畫布中的點擊事件
     canvasTag.addEventListener('mouseup', event => {
@@ -19,6 +30,8 @@ import AOC from './modules/AOC'
         cityList.push([x, y])
         // 在畫布中劃出點擊點
         canvas.drawPoint(x, y)
+        // 更新總城市數
+        updateTotalCityValue()
     })
 
 
@@ -35,6 +48,9 @@ import AOC from './modules/AOC'
             // 在畫布中劃出點擊點
             canvas.drawPoint(x, y)
         }
+        // 更新總城市數
+        updateTotalCityValue()
+
     })
 
     // 綁定計算最點路徑按鈕點擊事件
@@ -53,7 +69,7 @@ import AOC from './modules/AOC'
             canvas.drawLine(bestRoute[i-1],bestRoute[i])
             canvas.drawPoint(x, y)
         }
-        console.log(bestRouteLength)
+        bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2)
     })
 
     // 綁定重置按鈕點擊事件
@@ -63,5 +79,9 @@ import AOC from './modules/AOC'
         canvas.clearCanvas();
         // 清空已標記的點
         cityList = [];
+        // 更新總城市數
+        updateTotalCityValue()
+        // 更新最佳路徑距離
+        bestDistanceValueTag.innerHTML = 0
     })
 })()
