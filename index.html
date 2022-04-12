@@ -7,17 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ant Colony Optimization</title>
     <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        html {
+            display: table;
+            margin: auto;
+        }
+
+        body {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
         #canvas {
-            border:5px;
+            border: 5px;
             border-radius: 50px;
             border-color: #666767;
-            border-style:solid;
+            border-style: solid;
             background-color: #bcbcbc;
 
             /* background-color: #4d5daa; */
             /* height: 400px; */
             /* width: 400px; */
         }
+
 
         button {
             margin-top: 5px;
@@ -34,10 +50,12 @@
 <body>
     <canvas id="canvas">設備不支持 canvas</canvas>
     <hr />
-    <input size="50" id='randomPositionAmount' type="text"> <button id="randomPositionBtn">Random
-        Position</button><br />
-    <button id='calculateShortestPathBtn'>計算走訪最短路徑</button>
-    <button id='resetBtn'>重置</button>
+    <p align="center" >
+        <input size="50" id='randomPositionAmount' type="text"> <button id="randomPositionBtn">Random
+            Position</button><br />
+        <button id='calculateShortestPathBtn'>計算走訪最短路徑</button>
+        <button id='resetBtn'>重置</button>
+    </div>
     <script type="text/javascript" src="./index.js"></script>
 </body>
 
