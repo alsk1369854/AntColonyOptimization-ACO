@@ -2,10 +2,7 @@
 
 <center>
 
-<iframe width='480' height="550" src='https://alsk1369854.github.io/AntColonyOptimization_ACO/'>
-
-</iframe>
-
+![](https://raw.githubusercontent.com/alsk1369854/AntColonyOptimization_ACO/master/screenshots/demoPage.png)
 </center>
 
 + Demo:
