@@ -1,38 +1,38 @@
-export default class CanvasUtil {
-
-
-    constructor(canvasTag) {
-        this.canvasTag = canvasTag;
+class CanvasUtil {
+    constructor() {
+        // 創建畫布操作工具
+        this.canvasTag = document.getElementById('canvas')
+        this.canvasTag.width = 450
+        this.canvasTag.height = 400
         this.ctx = this.canvasTag.getContext('2d')
-
-        this.width = canvasTag.width;
-        this.height = canvasTag.height;
     }
 
+    getTag() {
+        return this.canvasTag
+    }
     setWidth(newWidth) {
-        this.canvasTag.width = newWidth 
-        this.width = newWidth
+        this.canvasTag.width = newWidth
+
     }
     setHeight(newHeight) {
-        this.canvasTag.height = newHeight 
-        this.height = newHeight
+        this.canvasTag.height = newHeight
     }
     getWidth() {
-        return this.width
+        return this.canvasTag.width
     }
-    getHeight(){
-        return this.height
+    getHeight() {
+        return this.canvasTag.height
     }
-    getContext2D(){
+    getContext2D() {
         return this.ctx
     }
     // 清空畫布
-    clearCanvas(){
-        this.ctx.clearRect(0, 0, this.width, this.height);
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvasTag.width, this.canvasTag.height);
     }
 
     // 畫點
-    drawPoint(x, y){
+    drawPoint(x, y) {
 
         this.ctx.fillStyle = "#455ac2"
         this.ctx.beginPath();
@@ -42,7 +42,7 @@ export default class CanvasUtil {
     }
 
     // 畫線
-    drawLine(startPosition, endPosition){
+    drawLine(startPosition, endPosition) {
         const { [0]: startX, [1]: startY } = startPosition
         const { [0]: endX, [1]: endY } = endPosition
 
@@ -54,3 +54,5 @@ export default class CanvasUtil {
         this.ctx.stroke()
     }
 }
+
+export default new CanvasUtil()

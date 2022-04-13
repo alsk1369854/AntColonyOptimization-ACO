@@ -16,24 +16,57 @@ body {
 button {
     width: 200px;
 }
+button, input{
+    margin: 5px;
+}
 
 #canvas {
-    border: 5px;
+    border: 2px;
     border-radius: 50px;
-    border-color: #666767;
+    border-color: #000000;
     border-style: solid;
     background-color: #bcbcbc;
 }
 
 .container {
+    margin-top: 30px;
     display: flex;
     flex-direction: column;
 }
 
 .item {
-    flex: 1;
-    margin: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.loadingBar {
+    margin: 0px 10px;
+    float: left;
+    border: 2px;
+    border-style: solid;
+    border-color: black;
+    border-radius: 30px;
+    width: 430px;
+    height: 20px;
+    position: relative;
+    background-color: #bcbcbc;
+}
+
+#loadingLine {
+    border-radius: 30px;
+    height: 100%;
+    width: 0%;
+    background-color: rgb(105, 138, 222);
+}
+
+.loadingPercentBar {
+    position: relative;
+    top: -8px;
+    color: white;
+    font-weight: 900;
+    font-size: 25px;
+    position: absolute;
+    text-align: center;
+    width: 100%;
 }

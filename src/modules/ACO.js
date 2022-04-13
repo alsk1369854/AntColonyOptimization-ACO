@@ -1,12 +1,12 @@
+import LoadingBar from './LoadingBar'
+
 export default class AOC {
-
-
     constructor(cityList) {
         this.cityList = [...cityList]
         this.cityLength = this.cityList.length
         this.cityIDList = this.cityList.map((_, index) => index)
 
-        this.ColonySize = 30 // 螞蟻數量
+        this.ColonySize = this.cityLength // 螞蟻數量 30
         this.MaxIterations = 200 // 最大回合數
         this.Alpha = 1 // 費洛蒙權重係數
         this.Beta = 3 // 城市距離權重係數 ( Beta > Alpha 結果較佳)
@@ -17,6 +17,9 @@ export default class AOC {
         // 城市距離矩陣
         this.distanceMatrix = []
 
+        // 城市能見度矩陣
+        this.visibilityMatrix = []
+
         // 費洛蒙矩陣
         this.pheromoneMatrix = []
 
@@ -25,7 +28,7 @@ export default class AOC {
         this.bestRouteLength = Number.MAX_SAFE_INTEGER
 
         // 距離矩陣與初始費洛蒙矩陣
-        this.buildDistanceMatrix(this.cityList)
+        this.buildVisibilityMatrix(this.cityList)
         this.buildInitialPheromoneMatrix()
     }
     getBestRoute() {
@@ -42,11 +45,13 @@ export default class AOC {
         return Math.sqrt(Math.pow(twoX - oneX, 2) + Math.pow(twoY - oneY, 2))
     }
     // 建立城市能見度矩陣
-    buildDistanceMatrix(cityList) {
+    buildVisibilityMatrix(cityList) {
         for (let i = 0; i < this.cityLength; i++) {
             this.distanceMatrix.push([])
+            this.visibilityMatrix.push([])
             for (let j = 0; j < this.cityLength; j++) {
-                this.distanceMatrix[i].push(1 / this.claculateTheDistanceBetweenTwoOption(cityList[i], cityList[j]))
+                this.distanceMatrix[i].push(this.claculateTheDistanceBetweenTwoOption(cityList[i], cityList[j]))
+                this.visibilityMatrix[i].push(1 / this.distanceMatrix[i][j])
             }
         }
     }
@@ -88,7 +93,7 @@ export default class AOC {
         for (let i = 0; i < IterationResultList.length; i++) {
             let routeLen = 0
             for (let j = 1; j < IterationResultList[i].length; j++) {
-                routeLen += this.claculateTheDistanceBetweenTwoOption(this.cityList[IterationResultList[i][j-1]], this.cityList[IterationResultList[i][j]])
+                routeLen += this.distanceMatrix[IterationResultList[i][j-1]][IterationResultList[i][j]]
             }
             // 更新最短路徑
             if (routeLen < this.bestRouteLength) {
@@ -105,6 +110,9 @@ export default class AOC {
 
     // 運行計算
     run() {
+        // 初始化LoadingLine
+        LoadingBar.setPersent(0)
+
         for (let i = 0; i < this.MaxIterations; i++) { // 每個回合
             // 準備一個List，存儲每隻螞蟻的結果
             let currentIterationResultList = []
@@ -124,7 +132,7 @@ export default class AOC {
                 for (let k = 1; k < this.cityLength; k++) { // 每個城市
                     // 機算前往每個候選城市的機率
                     let candidateCityProbabilityList = currentCandidateCityIDList.map(targetID =>
-                        Math.pow(this.pheromoneMatrix[currentCityID][targetID], this.Alpha) * Math.pow(this.distanceMatrix[currentCityID][targetID], this.Beta)
+                        Math.pow(this.pheromoneMatrix[currentCityID][targetID], this.Alpha) * Math.pow(this.visibilityMatrix[currentCityID][targetID], this.Beta)
                     )
                     // 前往下一個城市
                     const nextCityIndex = this.doRouletteWheelSelection(candidateCityProbabilityList)
@@ -138,6 +146,9 @@ export default class AOC {
             }
             // 更新費洛蒙舉矩陣
             this.updatePheromoneMatrix(currentIterationResultList)
+
+            // 更新畫面LoadingLine
+            LoadingBar.setPersent(Math.floor((i+1)/this.MaxIterations*100))
         }
     }
 };

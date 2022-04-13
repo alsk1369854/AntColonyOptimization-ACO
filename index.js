@@ -5,18 +5,17 @@ var _CanvasUtil = require('./modules/CanvasUtil');
 
 var _CanvasUtil2 = _interopRequireDefault(_CanvasUtil);
 
-var _AOC = require('./modules/AOC');
+var _LoadingBar = require('./modules/LoadingBar');
 
-var _AOC2 = _interopRequireDefault(_AOC);
+var _LoadingBar2 = _interopRequireDefault(_LoadingBar);
+
+var _ACO = require('./modules/ACO');
+
+var _ACO2 = _interopRequireDefault(_ACO);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (function () {
-    // 創建畫布操作工具
-    var canvasTag = document.getElementById('canvas');
-    var canvas = new _CanvasUtil2.default(canvasTag);
-    canvas.setWidth(450);
-    canvas.setHeight(400);
 
     // 最佳路程顯示標籤
     var bestDistanceValueTag = document.getElementById('bestDistanceValue');
@@ -33,7 +32,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     };
 
     // 綁定在畫布中的點擊事件
-    canvasTag.addEventListener('mouseup', function (event) {
+    _CanvasUtil2.default.getTag().addEventListener('mouseup', function (event) {
         // 在點擊的 x y 座標
         var x = event.offsetX,
             y = event.offsetY;
@@ -41,7 +40,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
         cityList.push([x, y]);
         // 在畫布中劃出點擊點
-        canvas.drawPoint(x, y);
+        _CanvasUtil2.default.drawPoint(x, y);
         // 更新總城市數
         updateTotalCityValue();
     });
@@ -52,12 +51,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         var randomPositionAmount = document.getElementById('randomPositionAmount').value;
         for (var i = 0; i < randomPositionAmount; i++) {
             // 隨機x y軸
-            var x = Math.random() * (canvas.getWidth() - 1);
-            var y = Math.random() * (canvas.getHeight() - 1);
+            var x = Math.random() * (_CanvasUtil2.default.getWidth() - 1);
+            var y = Math.random() * (_CanvasUtil2.default.getHeight() - 1);
             // 將點擊座標加入 pointList 中
             cityList.push([x, y]);
             // 在畫布中劃出點擊點
-            canvas.drawPoint(x, y);
+            _CanvasUtil2.default.drawPoint(x, y);
         }
         // 更新總城市數
         updateTotalCityValue();
@@ -66,21 +65,21 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     // 綁定計算最點路徑按鈕點擊事件
     var calculateShortestPathBtn = document.getElementById('calculateShortestPathBtn');
     calculateShortestPathBtn.addEventListener('click', function (event) {
-        var aoc = new _AOC2.default(cityList);
-        // console.log(aoc.getCityList())
-        aoc.run();
-        var bestRoute = aoc.getBestRoute();
-        var bestRouteLength = aoc.getBestRouteLength();
+        var aco = new _ACO2.default(cityList);
+        // console.log(ACO.getCityList())
+        aco.run();
+        var bestRoute = aco.getBestRoute();
+        var bestRouteLength = aco.getBestRouteLength();
 
         // 劃出最佳路徑
-        canvas.clearCanvas();
+        _CanvasUtil2.default.clearCanvas();
         for (var i = 1; i < bestRoute.length; i++) {
             var _bestRoute$i = bestRoute[i],
                 x = _bestRoute$i[0],
                 y = _bestRoute$i[1];
 
-            canvas.drawLine(bestRoute[i - 1], bestRoute[i]);
-            canvas.drawPoint(x, y);
+            _CanvasUtil2.default.drawLine(bestRoute[i - 1], bestRoute[i]);
+            _CanvasUtil2.default.drawPoint(x, y);
         }
         bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2);
     });
@@ -89,7 +88,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     var resetBtn = document.getElementById('resetBtn');
     resetBtn.addEventListener('click', function (event) {
         // 清空畫布
-        canvas.clearCanvas();
+        _CanvasUtil2.default.clearCanvas();
+        // 初始畫讀條
+        _LoadingBar2.default.setPersent(0);
         // 清空已標記的點
         cityList = [];
         // 更新總城市數
@@ -98,14 +99,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         bestDistanceValueTag.innerHTML = 0;
     });
 })();
-},{"./modules/AOC":2,"./modules/CanvasUtil":3}],2:[function(require,module,exports){
-"use strict";
+},{"./modules/ACO":2,"./modules/CanvasUtil":3,"./modules/LoadingBar":4}],2:[function(require,module,exports){
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _LoadingBar = require('./LoadingBar');
+
+var _LoadingBar2 = _interopRequireDefault(_LoadingBar);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -121,7 +128,7 @@ var AOC = function () {
             return index;
         });
 
-        this.ColonySize = 30; // 螞蟻數量
+        this.ColonySize = this.cityLength; // 螞蟻數量 30
         this.MaxIterations = 200; // 最大回合數
         this.Alpha = 1; // 費洛蒙權重係數
         this.Beta = 3; // 城市距離權重係數 ( Beta > Alpha 結果較佳)
@@ -132,6 +139,9 @@ var AOC = function () {
         // 城市距離矩陣
         this.distanceMatrix = [];
 
+        // 城市能見度矩陣
+        this.visibilityMatrix = [];
+
         // 費洛蒙矩陣
         this.pheromoneMatrix = [];
 
@@ -140,12 +150,12 @@ var AOC = function () {
         this.bestRouteLength = Number.MAX_SAFE_INTEGER;
 
         // 距離矩陣與初始費洛蒙矩陣
-        this.buildDistanceMatrix(this.cityList);
+        this.buildVisibilityMatrix(this.cityList);
         this.buildInitialPheromoneMatrix();
     }
 
     _createClass(AOC, [{
-        key: "getBestRoute",
+        key: 'getBestRoute',
         value: function getBestRoute() {
             var _this = this;
 
@@ -154,7 +164,7 @@ var AOC = function () {
             });
         }
     }, {
-        key: "getBestRouteLength",
+        key: 'getBestRouteLength',
         value: function getBestRouteLength() {
             return this.bestRouteLength;
         }
@@ -162,7 +172,7 @@ var AOC = function () {
         // 機算兩城市間的距離
 
     }, {
-        key: "claculateTheDistanceBetweenTwoOption",
+        key: 'claculateTheDistanceBetweenTwoOption',
         value: function claculateTheDistanceBetweenTwoOption(positionOne, positionTwo) {
             var oneX = positionOne[0],
                 oneY = positionOne[1];
@@ -174,12 +184,14 @@ var AOC = function () {
         // 建立城市能見度矩陣
 
     }, {
-        key: "buildDistanceMatrix",
-        value: function buildDistanceMatrix(cityList) {
+        key: 'buildVisibilityMatrix',
+        value: function buildVisibilityMatrix(cityList) {
             for (var i = 0; i < this.cityLength; i++) {
                 this.distanceMatrix.push([]);
+                this.visibilityMatrix.push([]);
                 for (var j = 0; j < this.cityLength; j++) {
-                    this.distanceMatrix[i].push(1 / this.claculateTheDistanceBetweenTwoOption(cityList[i], cityList[j]));
+                    this.distanceMatrix[i].push(this.claculateTheDistanceBetweenTwoOption(cityList[i], cityList[j]));
+                    this.visibilityMatrix[i].push(1 / this.distanceMatrix[i][j]);
                 }
             }
         }
@@ -187,7 +199,7 @@ var AOC = function () {
         // 建立初始費洛蒙矩陣
 
     }, {
-        key: "buildInitialPheromoneMatrix",
+        key: 'buildInitialPheromoneMatrix',
         value: function buildInitialPheromoneMatrix() {
             for (var i = 0; i < this.cityLength; i++) {
                 this.pheromoneMatrix.push([]);
@@ -200,7 +212,7 @@ var AOC = function () {
         // 隨機輪盤法
 
     }, {
-        key: "doRouletteWheelSelection",
+        key: 'doRouletteWheelSelection',
         value: function doRouletteWheelSelection(candidateCityProbabilityList) {
             // 所有機率之和
             var sumProbability = candidateCityProbabilityList.reduce(function (previusValue, currentValue) {
@@ -222,7 +234,7 @@ var AOC = function () {
         // 更新費洛蒙居矩陣
 
     }, {
-        key: "updatePheromoneMatrix",
+        key: 'updatePheromoneMatrix',
         value: function updatePheromoneMatrix(IterationResultList) {
             // 費洛蒙衰退
             for (var i = 0; i < this.cityLength; i++) {
@@ -234,7 +246,7 @@ var AOC = function () {
             for (var _i = 0; _i < IterationResultList.length; _i++) {
                 var routeLen = 0;
                 for (var _j = 1; _j < IterationResultList[_i].length; _j++) {
-                    routeLen += this.claculateTheDistanceBetweenTwoOption(this.cityList[IterationResultList[_i][_j - 1]], this.cityList[IterationResultList[_i][_j]]);
+                    routeLen += this.distanceMatrix[IterationResultList[_i][_j - 1]][IterationResultList[_i][_j]];
                 }
                 // 更新最短路徑
                 if (routeLen < this.bestRouteLength) {
@@ -252,9 +264,12 @@ var AOC = function () {
         // 運行計算
 
     }, {
-        key: "run",
+        key: 'run',
         value: function run() {
             var _this2 = this;
+
+            // 初始化LoadingLine
+            _LoadingBar2.default.setPersent(0);
 
             for (var i = 0; i < this.MaxIterations; i++) {
                 // 每個回合
@@ -279,7 +294,7 @@ var AOC = function () {
                         // 每個城市
                         // 機算前往每個候選城市的機率
                         var candidateCityProbabilityList = currentCandidateCityIDList.map(function (targetID) {
-                            return Math.pow(_this2.pheromoneMatrix[currentCityID][targetID], _this2.Alpha) * Math.pow(_this2.distanceMatrix[currentCityID][targetID], _this2.Beta);
+                            return Math.pow(_this2.pheromoneMatrix[currentCityID][targetID], _this2.Alpha) * Math.pow(_this2.visibilityMatrix[currentCityID][targetID], _this2.Beta);
                         });
                         // 前往下一個城市
                         var nextCityIndex = _this2.doRouletteWheelSelection(candidateCityProbabilityList);
@@ -297,6 +312,9 @@ var AOC = function () {
                 }
                 // 更新費洛蒙舉矩陣
                 this.updatePheromoneMatrix(currentIterationResultList);
+
+                // 更新畫面LoadingLine
+                _LoadingBar2.default.setPersent(Math.floor((i + 1) / this.MaxIterations * 100));
             }
         }
     }]);
@@ -306,8 +324,8 @@ var AOC = function () {
 
 exports.default = AOC;
 ;
-},{}],3:[function(require,module,exports){
-"use strict";
+},{"./LoadingBar":4}],3:[function(require,module,exports){
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -318,55 +336,58 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CanvasUtil = function () {
-    function CanvasUtil(canvasTag) {
+    function CanvasUtil() {
         _classCallCheck(this, CanvasUtil);
 
-        this.canvasTag = canvasTag;
+        // 創建畫布操作工具
+        this.canvasTag = document.getElementById('canvas');
+        this.canvasTag.width = 450;
+        this.canvasTag.height = 400;
         this.ctx = this.canvasTag.getContext('2d');
-
-        this.width = canvasTag.width;
-        this.height = canvasTag.height;
     }
 
     _createClass(CanvasUtil, [{
-        key: "setWidth",
+        key: 'getTag',
+        value: function getTag() {
+            return this.canvasTag;
+        }
+    }, {
+        key: 'setWidth',
         value: function setWidth(newWidth) {
             this.canvasTag.width = newWidth;
-            this.width = newWidth;
         }
     }, {
-        key: "setHeight",
+        key: 'setHeight',
         value: function setHeight(newHeight) {
             this.canvasTag.height = newHeight;
-            this.height = newHeight;
         }
     }, {
-        key: "getWidth",
+        key: 'getWidth',
         value: function getWidth() {
-            return this.width;
+            return this.canvasTag.width;
         }
     }, {
-        key: "getHeight",
+        key: 'getHeight',
         value: function getHeight() {
-            return this.height;
+            return this.canvasTag.height;
         }
     }, {
-        key: "getContext2D",
+        key: 'getContext2D',
         value: function getContext2D() {
             return this.ctx;
         }
         // 清空畫布
 
     }, {
-        key: "clearCanvas",
+        key: 'clearCanvas',
         value: function clearCanvas() {
-            this.ctx.clearRect(0, 0, this.width, this.height);
+            this.ctx.clearRect(0, 0, this.canvasTag.width, this.canvasTag.height);
         }
 
         // 畫點
 
     }, {
-        key: "drawPoint",
+        key: 'drawPoint',
         value: function drawPoint(x, y) {
 
             this.ctx.fillStyle = "#455ac2";
@@ -379,7 +400,7 @@ var CanvasUtil = function () {
         // 畫線
 
     }, {
-        key: "drawLine",
+        key: 'drawLine',
         value: function drawLine(startPosition, endPosition) {
             var startX = startPosition[0],
                 startY = startPosition[1];
@@ -399,5 +420,36 @@ var CanvasUtil = function () {
     return CanvasUtil;
 }();
 
-exports.default = CanvasUtil;
+exports.default = new CanvasUtil();
+},{}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var LoadingBar = function () {
+    function LoadingBar() {
+        _classCallCheck(this, LoadingBar);
+
+        this.loadingLineTag = document.getElementById('loadingLine');
+        this.loadingPercentTag = document.getElementById('loadingPercent');
+    }
+
+    _createClass(LoadingBar, [{
+        key: 'setPersent',
+        value: function setPersent(newPercent) {
+            this.loadingPercentTag.innerHTML = newPercent;
+            this.loadingLineTag.style.width = newPercent + '%';
+        }
+    }]);
+
+    return LoadingBar;
+}();
+
+exports.default = new LoadingBar();
 },{}]},{},[1]);
