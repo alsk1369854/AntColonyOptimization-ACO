@@ -26,6 +26,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     var runTimeValueTage = document.getElementById('runTimeValue');
     // 存儲要走訪的城市
     var cityList = [];
+    // 執行伐
+    var isRun = false;
 
     var updateTotalCityValue = function updateTotalCityValue() {
         cityAmount = cityList.length;
@@ -34,6 +36,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
     // 綁定在畫布中的點擊事件
     _CanvasUtil2.default.getTag().addEventListener('mouseup', function (event) {
+        if (isRun) return;
         // 在點擊的 x y 座標
         var x = event.offsetX,
             y = event.offsetY;
@@ -49,6 +52,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     // 綁定隨機位址點擊事件
     var randomPositionBtn = document.getElementById('randomPositionBtn');
     randomPositionBtn.addEventListener('click', function (event) {
+        if (isRun) return;
         var randomPositionAmount = document.getElementById('randomPositionAmount').value;
         for (var i = 0; i < randomPositionAmount; i++) {
             // 隨機x y軸
@@ -65,13 +69,42 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
     // 綁定計算最點路徑按鈕點擊事件
     var calculateShortestPathBtn = document.getElementById('calculateShortestPathBtn');
-    calculateShortestPathBtn.addEventListener('click', async function (event) {
-        if (cityList.length <= 0) return;
+    calculateShortestPathBtn.addEventListener('click', function (event) {
+        if (cityList.length <= 0 || isRun) return;
+        // 更新執行伐
+        isRun = true;
 
+        // 創建螞蟻演算法
         var aco = new _ACO2.default(cityList);
-        /*
-            * 將城市清單傳入創建 ACO 物件
-            cityList =
+        // 設定演算法跑完後的回釣函數 (演算採用非同步方法) 
+        aco.done = function () {
+            // 獲取最終結果
+            var bestRoute = aco.getBestRoute();
+            var bestRouteLength = aco.getBestRouteLength();
+            var runTime = aco.getRunTime();
+
+            // 劃出最佳路徑
+            _CanvasUtil2.default.clearCanvas();
+            for (var i = 1; i < bestRoute.length; i++) {
+                var _bestRoute$i = bestRoute[i],
+                    x = _bestRoute$i[0],
+                    y = _bestRoute$i[1];
+
+                _CanvasUtil2.default.drawLine(bestRoute[i - 1], bestRoute[i]);
+                _CanvasUtil2.default.drawPoint(x, y);
+            }
+            // 顯示數據至畫面
+            bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2);
+            runTimeValueTage.innerHTML = runTime;
+            // 更新執行伐
+            isRun = false;
+        };
+        // 運行螞蟻演算法 (是個非同步方法) 
+        aco.run();
+
+        /*                      ACO API
+            * 傳入的城市清單 (constructor input value)
+                        cityList =
             0: (2) [35.212731258971694, 192.4828380031023]
             1: (2) [406.7893800046783, 353.11516232128866]
             2: (2) [203.79469153183967, 239.43525762360284]
@@ -82,14 +115,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             7: (2) [92.13800512190628, 65.69702123912263]
             8: (2) [263.6048907161056, 34.919847014702256]
             9: (2) [399.35957106588666, 264.9649031596936]
-        */
-
-        // 運行螞蟻演算法
-        await aco.run();
-
-        // 獲取最終結果
-        var bestRoute = aco.getBestRoute();
-        /*
+             * 獲取最佳路程清單
+                        aco.getBestRoute()
             0: (2) [92.13800512190628, 65.69702123912263]
             1: (2) [35.212731258971694, 192.4828380031023]
             2: (2) [155.3177116443413, 126.45807928516383]
@@ -101,35 +128,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             8: (2) [399.35957106588666, 264.9649031596936]
             9: (2) [263.6048907161056, 34.919847014702256]
             10: (2) [92.13800512190628, 65.69702123912263]
+             * 獲路最佳路程總長度
+                        aco.getBestRouteLength()
+            1226.3942916446954
+             * 獲得演算法執行時間/s
+                     * aco.getRunTime()
+            1
         */
-
-        var bestRouteLength = aco.getBestRouteLength();
-        /**
-         * 1226.3942916446954
-         */
-
-        var runTime = aco.getRunTime();
-        /**
-         * 1
-         */
-
-        // 劃出最佳路徑
-        _CanvasUtil2.default.clearCanvas();
-        for (var i = 1; i < bestRoute.length; i++) {
-            var _bestRoute$i = bestRoute[i],
-                x = _bestRoute$i[0],
-                y = _bestRoute$i[1];
-
-            _CanvasUtil2.default.drawLine(bestRoute[i - 1], bestRoute[i]);
-            _CanvasUtil2.default.drawPoint(x, y);
-        }
-        bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2);
-        runTimeValueTage.innerHTML = runTime;
     });
 
     // 綁定重置按鈕點擊事件
     var resetBtn = document.getElementById('resetBtn');
     resetBtn.addEventListener('click', function (event) {
+        if (isRun) return;
         // 清空畫布
         _CanvasUtil2.default.clearCanvas();
         // 初始畫讀條
@@ -410,7 +421,11 @@ var AOC = function () {
 
             var endTime = new Date();
             this.runTime = Math.round((endTime - startTime) / 1000);
+            this.done();
         }
+    }, {
+        key: 'done',
+        value: function done() {}
     }]);
 
     return AOC;

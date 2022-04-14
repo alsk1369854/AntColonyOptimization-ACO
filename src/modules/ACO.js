@@ -185,5 +185,7 @@ export default class AOC {
 
         const endTime = new Date()
         this.runTime = Math.round((endTime - startTime) / 1000)
+        this.done()
     }
+    done(){}
 };

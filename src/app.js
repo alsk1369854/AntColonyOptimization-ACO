@@ -13,6 +13,8 @@ import ACO from './modules/ACO'
     const runTimeValueTage = document.getElementById('runTimeValue');
     // 存儲要走訪的城市
     let cityList = []
+    // 執行伐
+    let isRun = false
 
     const updateTotalCityValue = () => {
         cityAmount = cityList.length
@@ -21,6 +23,7 @@ import ACO from './modules/ACO'
 
     // 綁定在畫布中的點擊事件
     CanvasUtil.getTag().addEventListener('mouseup', event => {
+        if(isRun) return
         // 在點擊的 x y 座標
         const { offsetX: x, offsetY: y } = event
         // 將點擊座標加入 pointList 中
@@ -35,6 +38,7 @@ import ACO from './modules/ACO'
     // 綁定隨機位址點擊事件
     const randomPositionBtn = document.getElementById('randomPositionBtn')
     randomPositionBtn.addEventListener('click', event => {
+        if(isRun) return
         const randomPositionAmount = document.getElementById('randomPositionAmount').value
         for (let i = 0; i < randomPositionAmount; i++) {
             // 隨機x y軸
@@ -51,14 +55,39 @@ import ACO from './modules/ACO'
 
     // 綁定計算最點路徑按鈕點擊事件
     const calculateShortestPathBtn = document.getElementById('calculateShortestPathBtn');
-    calculateShortestPathBtn.addEventListener('click', async event => {
-        if (cityList.length <= 0) return
+    calculateShortestPathBtn.addEventListener('click', event => {
+        if (cityList.length <= 0 || isRun) return
+        // 更新執行伐
+        isRun = true
 
-
+        // 創建螞蟻演算法
         const aco = new ACO(cityList)
-        /*
-            * 將城市清單傳入創建 ACO 物件
-            cityList =
+        // 設定演算法跑完後的回釣函數 (演算採用非同步方法) 
+        aco.done = () => {
+            // 獲取最終結果
+            const bestRoute = aco.getBestRoute()
+            const bestRouteLength = aco.getBestRouteLength()
+            const runTime = aco.getRunTime()
+
+            // 劃出最佳路徑
+            CanvasUtil.clearCanvas();
+            for (let i = 1; i < bestRoute.length; i++) {
+                const { [0]: x, [1]: y } = bestRoute[i]
+                CanvasUtil.drawLine(bestRoute[i - 1], bestRoute[i])
+                CanvasUtil.drawPoint(x, y)
+            }
+            // 顯示數據至畫面
+            bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2)
+            runTimeValueTage.innerHTML = runTime
+            // 更新執行伐
+            isRun = false
+        }
+        // 運行螞蟻演算法 (是個非同步方法) 
+        aco.run()
+
+        /*                      ACO API
+            * 傳入的城市清單 (constructor input value)
+                        cityList =
             0: (2) [35.212731258971694, 192.4828380031023]
             1: (2) [406.7893800046783, 353.11516232128866]
             2: (2) [203.79469153183967, 239.43525762360284]
@@ -69,14 +98,9 @@ import ACO from './modules/ACO'
             7: (2) [92.13800512190628, 65.69702123912263]
             8: (2) [263.6048907161056, 34.919847014702256]
             9: (2) [399.35957106588666, 264.9649031596936]
-        */
-       
-        // 運行螞蟻演算法
-        await aco.run()
 
-        // 獲取最終結果
-        const bestRoute = aco.getBestRoute()
-        /*
+            * 獲取最佳路程清單
+                        aco.getBestRoute()
             0: (2) [92.13800512190628, 65.69702123912263]
             1: (2) [35.212731258971694, 192.4828380031023]
             2: (2) [155.3177116443413, 126.45807928516383]
@@ -88,32 +112,21 @@ import ACO from './modules/ACO'
             8: (2) [399.35957106588666, 264.9649031596936]
             9: (2) [263.6048907161056, 34.919847014702256]
             10: (2) [92.13800512190628, 65.69702123912263]
+
+            * 獲路最佳路程總長度
+                        aco.getBestRouteLength()
+            1226.3942916446954
+
+            * 獲得演算法執行時間/s
+                     * aco.getRunTime()
+            1
         */
-
-        const bestRouteLength = aco.getBestRouteLength()
-        /**
-         * 1226.3942916446954
-         */
-
-        const runTime = aco.getRunTime()
-        /**
-         * 1
-         */
-
-        // 劃出最佳路徑
-        CanvasUtil.clearCanvas();
-        for (let i = 1; i < bestRoute.length; i++) {
-            const { [0]: x, [1]: y } = bestRoute[i]
-            CanvasUtil.drawLine(bestRoute[i - 1], bestRoute[i])
-            CanvasUtil.drawPoint(x, y)
-        }
-        bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2)
-        runTimeValueTage.innerHTML = runTime
     })
 
     // 綁定重置按鈕點擊事件
     const resetBtn = document.getElementById('resetBtn')
     resetBtn.addEventListener('click', event => {
+        if(isRun) return
         // 清空畫布
         CanvasUtil.clearCanvas();
         // 初始畫讀條
