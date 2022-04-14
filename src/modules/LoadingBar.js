@@ -1,31 +1,29 @@
 class LoadingBar {
     constructor() {
         this.loadingBarTag = document.getElementById('loadingBar')
-        this.loadingPercentBarTag = document.getElementById('loadingPercentBar')
+        this.loadingPercentTag = document.getElementById('loadingPercent')
         this.loadingLineTag = document.getElementById('loadingLine')
     }
-    show(){
-        this.loadingBarTag.style.display = 'block'
-    }
-    close(){
-        this.loadingBarTag.style.display = 'none'
-    }
+
     setPersent(newPercent){
-        const copyPercentBarTag = this.loadingPercentBarTag.cloneNode()
-        const copyLineTag = this.loadingLineTag.cloneNode()
-        copyPercentBarTag.innerHTML = `<span id="loadingPercent">${newPercent}</span><span>%</span>`
-        copyLineTag.style.width = `${newPercent}%`
+        this.loadingPercentTag.innerHTML = newPercent
+        this.loadingLineTag.style.width = `${newPercent}%`
 
-        var fragment = document.createDocumentFragment();
-        fragment.appendChild(copyPercentBarTag)
-        fragment.appendChild(copyLineTag)
+        // const copyPercentBarTag = this.loadingPercentBarTag.cloneNode()
+        // const copyLineTag = this.loadingLineTag.cloneNode()
+        // this.loadingPercentTag.innerHTML = newPercent
+        // copyLineTag.style.width = `${newPercent}%`
 
-        this.loadingBarTag.removeChild(this.loadingPercentBarTag)
-        this.loadingBarTag.removeChild(this.loadingLineTag)
-        this.loadingBarTag.appendChild(fragment)
+        // var fragment = document.createDocumentFragment();
+        // fragment.appendChild(copyPercentBarTag)
+        // fragment.appendChild(copyLineTag)
 
-        this.loadingPercentBarTag = copyPercentBarTag
-        this.loadingLineTag = copyLineTag
+        // this.loadingBarTag.removeChild(this.loadingPercentBarTag)
+        // this.loadingBarTag.removeChild(this.loadingLineTag)
+        // this.loadingBarTag.appendChild(fragment)
+
+        // this.loadingPercentBarTag = copyPercentBarTag
+        // this.loadingLineTag = copyLineTag
     }
 }
 export default new LoadingBar()

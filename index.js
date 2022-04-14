@@ -56,8 +56,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         var randomPositionAmount = document.getElementById('randomPositionAmount').value;
         for (var i = 0; i < randomPositionAmount; i++) {
             // 隨機x y軸
-            var x = Math.random() * (_CanvasUtil2.default.getWidth() - 1);
-            var y = Math.random() * (_CanvasUtil2.default.getHeight() - 1);
+            var x = Math.random() * (_CanvasUtil2.default.getWidth() - 30) + 15;
+            var y = Math.random() * (_CanvasUtil2.default.getHeight() - 30) + 15;
             // 將點擊座標加入 pointList 中
             cityList.push([x, y]);
             // 在畫布中劃出點擊點
@@ -450,7 +450,7 @@ var CanvasUtil = function () {
 
         // 創建畫布操作工具
         this.canvasTag = document.getElementById('canvas');
-        this.canvasTag.width = 450;
+        this.canvasTag.width = 800; // 450
         this.canvasTag.height = 400;
         this.ctx = this.canvasTag.getContext('2d');
     }
@@ -500,9 +500,9 @@ var CanvasUtil = function () {
         key: 'drawPoint',
         value: function drawPoint(x, y) {
 
-            this.ctx.fillStyle = "#455ac2";
+            this.ctx.fillStyle = "#334f96";
             this.ctx.beginPath();
-            this.ctx.arc(x, y, 4, 0, 2 * Math.PI);
+            this.ctx.arc(x, y, 7, 0, 2 * Math.PI);
             this.ctx.stroke();
             this.ctx.fill();
         }
@@ -518,8 +518,8 @@ var CanvasUtil = function () {
                 endY = endPosition[1];
 
 
-            this.ctx.strokeStyle = "#4d5daa";
-            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = "#86a0e3";
+            this.ctx.lineWidth = 3;
             this.ctx.beginPath();
             this.ctx.moveTo(startX, startY);
             this.ctx.lineTo(endX, endY);
@@ -547,38 +547,31 @@ var LoadingBar = function () {
         _classCallCheck(this, LoadingBar);
 
         this.loadingBarTag = document.getElementById('loadingBar');
-        this.loadingPercentBarTag = document.getElementById('loadingPercentBar');
+        this.loadingPercentTag = document.getElementById('loadingPercent');
         this.loadingLineTag = document.getElementById('loadingLine');
     }
 
     _createClass(LoadingBar, [{
-        key: 'show',
-        value: function show() {
-            this.loadingBarTag.style.display = 'block';
-        }
-    }, {
-        key: 'close',
-        value: function close() {
-            this.loadingBarTag.style.display = 'none';
-        }
-    }, {
         key: 'setPersent',
         value: function setPersent(newPercent) {
-            var copyPercentBarTag = this.loadingPercentBarTag.cloneNode();
-            var copyLineTag = this.loadingLineTag.cloneNode();
-            copyPercentBarTag.innerHTML = '<span id="loadingPercent">' + newPercent + '</span><span>%</span>';
-            copyLineTag.style.width = newPercent + '%';
+            this.loadingPercentTag.innerHTML = newPercent;
+            this.loadingLineTag.style.width = newPercent + '%';
 
-            var fragment = document.createDocumentFragment();
-            fragment.appendChild(copyPercentBarTag);
-            fragment.appendChild(copyLineTag);
+            // const copyPercentBarTag = this.loadingPercentBarTag.cloneNode()
+            // const copyLineTag = this.loadingLineTag.cloneNode()
+            // this.loadingPercentTag.innerHTML = newPercent
+            // copyLineTag.style.width = `${newPercent}%`
 
-            this.loadingBarTag.removeChild(this.loadingPercentBarTag);
-            this.loadingBarTag.removeChild(this.loadingLineTag);
-            this.loadingBarTag.appendChild(fragment);
+            // var fragment = document.createDocumentFragment();
+            // fragment.appendChild(copyPercentBarTag)
+            // fragment.appendChild(copyLineTag)
 
-            this.loadingPercentBarTag = copyPercentBarTag;
-            this.loadingLineTag = copyLineTag;
+            // this.loadingBarTag.removeChild(this.loadingPercentBarTag)
+            // this.loadingBarTag.removeChild(this.loadingLineTag)
+            // this.loadingBarTag.appendChild(fragment)
+
+            // this.loadingPercentBarTag = copyPercentBarTag
+            // this.loadingLineTag = copyLineTag
         }
     }]);
 

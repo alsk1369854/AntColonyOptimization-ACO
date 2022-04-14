@@ -2,7 +2,7 @@ class CanvasUtil {
     constructor() {
         // 創建畫布操作工具
         this.canvasTag = document.getElementById('canvas')
-        this.canvasTag.width = 450
+        this.canvasTag.width = 800 // 450
         this.canvasTag.height = 400
         this.ctx = this.canvasTag.getContext('2d')
     }
@@ -35,9 +35,9 @@ class CanvasUtil {
     // 畫點
     drawPoint(x, y) {
 
-        this.ctx.fillStyle = "#455ac2"
+        this.ctx.fillStyle = "#334f96"
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 4, 0, 2 * Math.PI)
+        this.ctx.arc(x, y, 7, 0, 2 * Math.PI)
         this.ctx.stroke();
         this.ctx.fill();
     }
@@ -47,8 +47,8 @@ class CanvasUtil {
         const { [0]: startX, [1]: startY } = startPosition
         const { [0]: endX, [1]: endY } = endPosition
 
-        this.ctx.strokeStyle = "#4d5daa"
-        this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = "#86a0e3"
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
         this.ctx.moveTo(startX, startY)
         this.ctx.lineTo(endX, endY)

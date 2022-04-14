@@ -42,8 +42,8 @@ import ACO from './modules/ACO'
         const randomPositionAmount = document.getElementById('randomPositionAmount').value
         for (let i = 0; i < randomPositionAmount; i++) {
             // 隨機x y軸
-            const x = Math.random() * (CanvasUtil.getWidth() - 1)
-            const y = Math.random() * (CanvasUtil.getHeight() - 1)
+            const x = Math.random() * (CanvasUtil.getWidth() - 30)+15
+            const y = Math.random() * (CanvasUtil.getHeight() - 30)+15
             // 將點擊座標加入 pointList 中
             cityList.push([x, y])
             // 在畫布中劃出點擊點
