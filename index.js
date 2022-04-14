@@ -22,7 +22,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     // 總城市數顯示標籤
     var totalCityValueTag = document.getElementById('totalCityValue');
     var cityAmount = 0;
-
+    // 運行時間標籤
+    var runTimeValueTage = document.getElementById('runTimeValue');
     // 存儲要走訪的城市
     var cityList = [];
 
@@ -64,12 +65,53 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
     // 綁定計算最點路徑按鈕點擊事件
     var calculateShortestPathBtn = document.getElementById('calculateShortestPathBtn');
-    calculateShortestPathBtn.addEventListener('click', function (event) {
+    calculateShortestPathBtn.addEventListener('click', async function (event) {
+        if (cityList.length <= 0) return;
+
         var aco = new _ACO2.default(cityList);
-        // console.log(ACO.getCityList())
-        aco.run();
+        /*
+            * 將城市清單傳入創建 ACO 物件
+            cityList =
+            0: (2) [35.212731258971694, 192.4828380031023]
+            1: (2) [406.7893800046783, 353.11516232128866]
+            2: (2) [203.79469153183967, 239.43525762360284]
+            3: (2) [203.63797886159924, 303.82642780553886]
+            4: (2) [437.7676408659259, 306.5314600212263]
+            5: (2) [155.3177116443413, 126.45807928516383]
+            6: (2) [178.36759944327554, 173.25006961263063]
+            7: (2) [92.13800512190628, 65.69702123912263]
+            8: (2) [263.6048907161056, 34.919847014702256]
+            9: (2) [399.35957106588666, 264.9649031596936]
+        */
+
+        // 運行螞蟻演算法
+        await aco.run();
+
+        // 獲取最終結果
         var bestRoute = aco.getBestRoute();
+        /*
+            0: (2) [92.13800512190628, 65.69702123912263]
+            1: (2) [35.212731258971694, 192.4828380031023]
+            2: (2) [155.3177116443413, 126.45807928516383]
+            3: (2) [178.36759944327554, 173.25006961263063]
+            4: (2) [203.79469153183967, 239.43525762360284]
+            5: (2) [203.63797886159924, 303.82642780553886]
+            6: (2) [406.7893800046783, 353.11516232128866]
+            7: (2) [437.7676408659259, 306.5314600212263]
+            8: (2) [399.35957106588666, 264.9649031596936]
+            9: (2) [263.6048907161056, 34.919847014702256]
+            10: (2) [92.13800512190628, 65.69702123912263]
+        */
+
         var bestRouteLength = aco.getBestRouteLength();
+        /**
+         * 1226.3942916446954
+         */
+
+        var runTime = aco.getRunTime();
+        /**
+         * 1
+         */
 
         // 劃出最佳路徑
         _CanvasUtil2.default.clearCanvas();
@@ -82,6 +124,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             _CanvasUtil2.default.drawPoint(x, y);
         }
         bestDistanceValueTag.innerHTML = bestRouteLength.toFixed(2);
+        runTimeValueTage.innerHTML = runTime;
     });
 
     // 綁定重置按鈕點擊事件
@@ -97,6 +140,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         updateTotalCityValue();
         // 更新最佳路徑距離
         bestDistanceValueTag.innerHTML = 0;
+        runTimeValueTage.innerHTML = 0;
     });
 })();
 },{"./modules/ACO":2,"./modules/CanvasUtil":3,"./modules/LoadingBar":4}],2:[function(require,module,exports){
@@ -111,6 +155,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _LoadingBar = require('./LoadingBar');
 
 var _LoadingBar2 = _interopRequireDefault(_LoadingBar);
+
+var _CanvasUtil = require('./CanvasUtil');
+
+var _CanvasUtil2 = _interopRequireDefault(_CanvasUtil);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -128,7 +176,8 @@ var AOC = function () {
             return index;
         });
 
-        this.ColonySize = this.cityLength; // 螞蟻數量 30
+        // this.ColonySize = this.cityLength // 螞蟻數量 
+        this.ColonySize = 30; // 螞蟻數量 
         this.MaxIterations = 200; // 最大回合數
         this.Alpha = 1; // 費洛蒙權重係數
         this.Beta = 3; // 城市距離權重係數 ( Beta > Alpha 結果較佳)
@@ -149,6 +198,9 @@ var AOC = function () {
         this.bestRoute = [];
         this.bestRouteLength = Number.MAX_SAFE_INTEGER;
 
+        // 存儲處理時間
+        this.runTime = 0;
+
         // 距離矩陣與初始費洛蒙矩陣
         this.buildVisibilityMatrix(this.cityList);
         this.buildInitialPheromoneMatrix();
@@ -167,6 +219,20 @@ var AOC = function () {
         key: 'getBestRouteLength',
         value: function getBestRouteLength() {
             return this.bestRouteLength;
+        }
+    }, {
+        key: 'getRunTime',
+        value: function getRunTime() {
+            return this.runTime;
+        }
+    }, {
+        key: 'getRoute',
+        value: function getRoute(routeIDList) {
+            var _this2 = this;
+
+            return routeIDList.map(function (cityID) {
+                return _this2.cityList[cityID];
+            });
         }
 
         // 機算兩城市間的距離
@@ -235,7 +301,7 @@ var AOC = function () {
 
     }, {
         key: 'updatePheromoneMatrix',
-        value: function updatePheromoneMatrix(IterationResultList) {
+        value: async function updatePheromoneMatrix(IterationResultList) {
             // 費洛蒙衰退
             for (var i = 0; i < this.cityLength; i++) {
                 for (var j = 0; j < this.cityLength; j++) {
@@ -252,6 +318,20 @@ var AOC = function () {
                 if (routeLen < this.bestRouteLength) {
                     this.bestRoute = [].concat(_toConsumableArray(IterationResultList[_i]));
                     this.bestRouteLength = routeLen;
+
+                    // Start 目前最佳路徑 (可刪)＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+                    var route = this.getBestRoute();
+                    _CanvasUtil2.default.clearCanvas();
+                    for (var _i2 = 1; _i2 < route.length; _i2++) {
+                        var _route$_i = route[_i2],
+                            x = _route$_i[0],
+                            y = _route$_i[1];
+
+                        _CanvasUtil2.default.drawLine(route[_i2 - 1], route[_i2]);
+                        _CanvasUtil2.default.drawPoint(x, y);
+                    }
+                    await this.sleep(1);
+                    // End 劃出當前路徑 (可刪)＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
                 }
                 // 螞蟻走過路徑費洛蒙
                 var addPheromoneAmount = this.PheromoneDepositWeight / routeLen;
@@ -260,16 +340,26 @@ var AOC = function () {
                 }
             }
         }
+    }, {
+        key: 'sleep',
+        value: function sleep(sleepTime) {
+            return new Promise(function (r) {
+                return setTimeout(r, sleepTime);
+            });
+        }
 
         // 運行計算
 
     }, {
         key: 'run',
-        value: function run() {
-            var _this2 = this;
+        value: async function run() {
+            var _this3 = this;
 
             // 初始化LoadingLine
             _LoadingBar2.default.setPersent(0);
+            await this.sleep(1);
+            // 初始化執行時間
+            var startTime = new Date();
 
             for (var i = 0; i < this.MaxIterations; i++) {
                 // 每個回合
@@ -283,21 +373,21 @@ var AOC = function () {
                     // 紀錄當前所在的城市
                     var currentCityID = 0;
                     // 紀錄候選城市List
-                    var currentCandidateCityIDList = [].concat(_toConsumableArray(_this2.cityIDList));
+                    var currentCandidateCityIDList = [].concat(_toConsumableArray(_this3.cityIDList));
 
                     // 雖機選擇起始城市
                     var startCityIndex = Math.floor(Math.random() * currentCandidateCityIDList.length);
                     currentCityID = currentCandidateCityIDList.splice(startCityIndex, 1)[0];
                     currentAntRouteResult.push(currentCityID);
 
-                    for (var k = 1; k < _this2.cityLength; k++) {
+                    for (var k = 1; k < _this3.cityLength; k++) {
                         // 每個城市
                         // 機算前往每個候選城市的機率
                         var candidateCityProbabilityList = currentCandidateCityIDList.map(function (targetID) {
-                            return Math.pow(_this2.pheromoneMatrix[currentCityID][targetID], _this2.Alpha) * Math.pow(_this2.visibilityMatrix[currentCityID][targetID], _this2.Beta);
+                            return Math.pow(_this3.pheromoneMatrix[currentCityID][targetID], _this3.Alpha) * Math.pow(_this3.visibilityMatrix[currentCityID][targetID], _this3.Beta);
                         });
                         // 前往下一個城市
-                        var nextCityIndex = _this2.doRouletteWheelSelection(candidateCityProbabilityList);
+                        var nextCityIndex = _this3.doRouletteWheelSelection(candidateCityProbabilityList);
                         currentCityID = currentCandidateCityIDList.splice(nextCityIndex, 1)[0];
                         currentAntRouteResult.push(currentCityID);
                     }
@@ -311,11 +401,15 @@ var AOC = function () {
                     _loop(j);
                 }
                 // 更新費洛蒙舉矩陣
-                this.updatePheromoneMatrix(currentIterationResultList);
+                await this.updatePheromoneMatrix(currentIterationResultList);
 
                 // 更新畫面LoadingLine
                 _LoadingBar2.default.setPersent(Math.floor((i + 1) / this.MaxIterations * 100));
+                await this.sleep(1);
             }
+
+            var endTime = new Date();
+            this.runTime = Math.round((endTime - startTime) / 1000);
         }
     }]);
 
@@ -324,7 +418,7 @@ var AOC = function () {
 
 exports.default = AOC;
 ;
-},{"./LoadingBar":4}],3:[function(require,module,exports){
+},{"./CanvasUtil":3,"./LoadingBar":4}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -376,6 +470,7 @@ var CanvasUtil = function () {
         value: function getContext2D() {
             return this.ctx;
         }
+
         // 清空畫布
 
     }, {
@@ -436,15 +531,39 @@ var LoadingBar = function () {
     function LoadingBar() {
         _classCallCheck(this, LoadingBar);
 
+        this.loadingBarTag = document.getElementById('loadingBar');
+        this.loadingPercentBarTag = document.getElementById('loadingPercentBar');
         this.loadingLineTag = document.getElementById('loadingLine');
-        this.loadingPercentTag = document.getElementById('loadingPercent');
     }
 
     _createClass(LoadingBar, [{
+        key: 'show',
+        value: function show() {
+            this.loadingBarTag.style.display = 'block';
+        }
+    }, {
+        key: 'close',
+        value: function close() {
+            this.loadingBarTag.style.display = 'none';
+        }
+    }, {
         key: 'setPersent',
         value: function setPersent(newPercent) {
-            this.loadingPercentTag.innerHTML = newPercent;
-            this.loadingLineTag.style.width = newPercent + '%';
+            var copyPercentBarTag = this.loadingPercentBarTag.cloneNode();
+            var copyLineTag = this.loadingLineTag.cloneNode();
+            copyPercentBarTag.innerHTML = '<span id="loadingPercent">' + newPercent + '</span><span>%</span>';
+            copyLineTag.style.width = newPercent + '%';
+
+            var fragment = document.createDocumentFragment();
+            fragment.appendChild(copyPercentBarTag);
+            fragment.appendChild(copyLineTag);
+
+            this.loadingBarTag.removeChild(this.loadingPercentBarTag);
+            this.loadingBarTag.removeChild(this.loadingLineTag);
+            this.loadingBarTag.appendChild(fragment);
+
+            this.loadingPercentBarTag = copyPercentBarTag;
+            this.loadingLineTag = copyLineTag;
         }
     }]);
 

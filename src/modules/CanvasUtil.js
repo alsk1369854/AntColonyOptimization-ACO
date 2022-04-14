@@ -26,6 +26,7 @@ class CanvasUtil {
     getContext2D() {
         return this.ctx
     }
+    
     // 清空畫布
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvasTag.width, this.canvasTag.height);

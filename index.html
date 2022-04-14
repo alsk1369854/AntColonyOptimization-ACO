@@ -11,13 +11,14 @@
 
 <body>
     <canvas id="canvas">設備不支持 canvas</canvas><br>
-    <div class="loadingBar">
-        <div class="loadingPercentBar"><span id="loadingPercent">0</span><span>%</span></div>
+    <div id='loadingBar' class="loadingBar">
+        <div id='loadingPercentBar' class="loadingPercentBar"><span id="loadingPercent">0</span><span>%</span></div>
         <div id="loadingLine"></div>
     </div>
     <div class="container">
         <div>Total City: <samp id="totalCityValue">0</samp></div>
         <div>Best Distance: <samp id="bestDistanceValue">0</samp></div>
+        <div>Run Time: <samp id="runTimeValue">0</samp><samp>/s</samp></div>
         <div class="item">
             <input id='randomPositionAmount' value="10" size="28" type="text">
             <button id="randomPositionBtn">Add Random

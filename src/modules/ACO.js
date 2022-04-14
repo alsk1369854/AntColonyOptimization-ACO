@@ -1,4 +1,5 @@
 import LoadingBar from './LoadingBar'
+import CanvasUtil from './CanvasUtil'
 
 export default class AOC {
     constructor(cityList) {
@@ -6,7 +7,8 @@ export default class AOC {
         this.cityLength = this.cityList.length
         this.cityIDList = this.cityList.map((_, index) => index)
 
-        this.ColonySize = this.cityLength // 螞蟻數量 30
+        // this.ColonySize = this.cityLength // 螞蟻數量 
+        this.ColonySize = 30 // 螞蟻數量 
         this.MaxIterations = 200 // 最大回合數
         this.Alpha = 1 // 費洛蒙權重係數
         this.Beta = 3 // 城市距離權重係數 ( Beta > Alpha 結果較佳)
@@ -27,15 +29,25 @@ export default class AOC {
         this.bestRoute = []
         this.bestRouteLength = Number.MAX_SAFE_INTEGER
 
+        // 存儲處理時間
+        this.runTime = 0;
+
         // 距離矩陣與初始費洛蒙矩陣
         this.buildVisibilityMatrix(this.cityList)
         this.buildInitialPheromoneMatrix()
     }
+
     getBestRoute() {
         return this.bestRoute.map(cityID => this.cityList[cityID])
     }
     getBestRouteLength() {
         return this.bestRouteLength
+    }
+    getRunTime() {
+        return this.runTime
+    }
+    getRoute(routeIDList){
+        return routeIDList.map(cityID => this.cityList[cityID])
     }
 
     // 機算兩城市間的距離
@@ -82,7 +94,7 @@ export default class AOC {
     }
 
     // 更新費洛蒙居矩陣
-    updatePheromoneMatrix(IterationResultList) {
+    async updatePheromoneMatrix(IterationResultList) {
         // 費洛蒙衰退
         for (let i = 0; i < this.cityLength; i++) {
             for (let j = 0; j < this.cityLength; j++) {
@@ -93,12 +105,23 @@ export default class AOC {
         for (let i = 0; i < IterationResultList.length; i++) {
             let routeLen = 0
             for (let j = 1; j < IterationResultList[i].length; j++) {
-                routeLen += this.distanceMatrix[IterationResultList[i][j-1]][IterationResultList[i][j]]
+                routeLen += this.distanceMatrix[IterationResultList[i][j - 1]][IterationResultList[i][j]]
             }
             // 更新最短路徑
             if (routeLen < this.bestRouteLength) {
                 this.bestRoute = [...IterationResultList[i]]
                 this.bestRouteLength = routeLen
+
+                // Start 目前最佳路徑 (可刪)＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+                const route = this.getBestRoute()
+                CanvasUtil.clearCanvas();
+                for (let i = 1; i < route.length; i++) {
+                    const { [0]: x, [1]: y } = route[i]
+                    CanvasUtil.drawLine(route[i - 1], route[i])
+                    CanvasUtil.drawPoint(x, y)
+                }
+                await this.sleep(1)
+                // End 劃出當前路徑 (可刪)＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
             }
             // 螞蟻走過路徑費洛蒙
             const addPheromoneAmount = this.PheromoneDepositWeight / routeLen
@@ -108,10 +131,17 @@ export default class AOC {
         }
     }
 
+    sleep(sleepTime) {
+        return new Promise(r => setTimeout(r, sleepTime))
+    }
+
     // 運行計算
-    run() {
+    async run() {
         // 初始化LoadingLine
         LoadingBar.setPersent(0)
+        await this.sleep(1)
+        // 初始化執行時間
+        const startTime = new Date()
 
         for (let i = 0; i < this.MaxIterations; i++) { // 每個回合
             // 準備一個List，存儲每隻螞蟻的結果
@@ -143,12 +173,17 @@ export default class AOC {
                 currentAntRouteResult.push(currentAntRouteResult[0])
                 // 將當前螞蟻結果存入這回合結果清單
                 currentIterationResultList.push(currentAntRouteResult)
+
             }
             // 更新費洛蒙舉矩陣
-            this.updatePheromoneMatrix(currentIterationResultList)
+            await this.updatePheromoneMatrix(currentIterationResultList)
 
             // 更新畫面LoadingLine
-            LoadingBar.setPersent(Math.floor((i+1)/this.MaxIterations*100))
+            LoadingBar.setPersent(Math.floor((i + 1) / this.MaxIterations * 100))
+            await this.sleep(1)
         }
+
+        const endTime = new Date()
+        this.runTime = Math.round((endTime - startTime) / 1000)
     }
 };
