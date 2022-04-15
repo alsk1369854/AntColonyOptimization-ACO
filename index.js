@@ -73,6 +73,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         if (cityList.length <= 0 || isRun) return;
         // 更新執行伐
         isRun = true;
+        // 初始化路程與執行時間
+        bestDistanceValueTag.innerHTML = 0;
+        runTimeValueTage.innerHTML = 0;
 
         // 創建螞蟻演算法
         var aco = new _ACO2.default(cityList);
@@ -100,7 +103,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             isRun = false;
         };
         // 運行螞蟻演算法 (是個非同步方法) 
-        aco.run();
+        aco.start();
 
         /*                      ACO API
             * 傳入的城市清單 (constructor input value)
@@ -362,8 +365,8 @@ var AOC = function () {
         // 運行計算
 
     }, {
-        key: 'run',
-        value: async function run() {
+        key: 'start',
+        value: async function start() {
             var _this3 = this;
 
             // 初始化LoadingLine

@@ -23,7 +23,7 @@ import ACO from './modules/ACO'
 
     // 綁定在畫布中的點擊事件
     CanvasUtil.getTag().addEventListener('mouseup', event => {
-        if(isRun) return
+        if (isRun) return
         // 在點擊的 x y 座標
         const { offsetX: x, offsetY: y } = event
         // 將點擊座標加入 pointList 中
@@ -38,12 +38,12 @@ import ACO from './modules/ACO'
     // 綁定隨機位址點擊事件
     const randomPositionBtn = document.getElementById('randomPositionBtn')
     randomPositionBtn.addEventListener('click', event => {
-        if(isRun) return
+        if (isRun) return
         const randomPositionAmount = document.getElementById('randomPositionAmount').value
         for (let i = 0; i < randomPositionAmount; i++) {
             // 隨機x y軸
-            const x = Math.random() * (CanvasUtil.getWidth() - 30)+15
-            const y = Math.random() * (CanvasUtil.getHeight() - 30)+15
+            const x = Math.random() * (CanvasUtil.getWidth() - 30) + 15
+            const y = Math.random() * (CanvasUtil.getHeight() - 30) + 15
             // 將點擊座標加入 pointList 中
             cityList.push([x, y])
             // 在畫布中劃出點擊點
@@ -59,6 +59,9 @@ import ACO from './modules/ACO'
         if (cityList.length <= 0 || isRun) return
         // 更新執行伐
         isRun = true
+        // 初始化路程與執行時間
+        bestDistanceValueTag.innerHTML = 0
+        runTimeValueTage.innerHTML = 0
 
         // 創建螞蟻演算法
         const aco = new ACO(cityList)
@@ -83,7 +86,7 @@ import ACO from './modules/ACO'
             isRun = false
         }
         // 運行螞蟻演算法 (是個非同步方法) 
-        aco.run()
+        aco.start()
 
         /*                      ACO API
             * 傳入的城市清單 (constructor input value)
@@ -126,7 +129,7 @@ import ACO from './modules/ACO'
     // 綁定重置按鈕點擊事件
     const resetBtn = document.getElementById('resetBtn')
     resetBtn.addEventListener('click', event => {
-        if(isRun) return
+        if (isRun) return
         // 清空畫布
         CanvasUtil.clearCanvas();
         // 初始畫讀條

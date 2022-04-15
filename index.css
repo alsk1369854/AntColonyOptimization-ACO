@@ -13,14 +13,13 @@ body {
     vertical-align: middle;
 }
 
-
 .myBtn {
     width: 200px;
     color: #fff;
     background-color: #698ade;
     border-color: #698ade;
-
 }
+
 .myBtn:hover {
     color: #fff;
     background-color: #4668bf;
@@ -65,7 +64,8 @@ body {
     width: 400px;
     height: 20px;
     position: relative;
-    background-color: #bcbcbc;
+    box-shadow: 0px 0px 15px 2px #bcbcbc;
+    background-color: #d9d9d9;
 }
 
 #loadingLine {

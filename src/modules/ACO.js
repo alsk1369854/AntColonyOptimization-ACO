@@ -46,7 +46,7 @@ export default class AOC {
     getRunTime() {
         return this.runTime
     }
-    getRoute(routeIDList){
+    getRoute(routeIDList) {
         return routeIDList.map(cityID => this.cityList[cityID])
     }
 
@@ -136,7 +136,7 @@ export default class AOC {
     }
 
     // 運行計算
-    async run() {
+    async start() {
         // 初始化LoadingLine
         LoadingBar.setPersent(0)
         await this.sleep(1)
@@ -187,5 +187,5 @@ export default class AOC {
         this.runTime = Math.round((endTime - startTime) / 1000)
         this.done()
     }
-    done(){}
+    done() { }
 };
