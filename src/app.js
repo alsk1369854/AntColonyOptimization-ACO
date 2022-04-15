@@ -3,7 +3,6 @@ import LoadingBar from './modules/LoadingBar'
 import ACO from './modules/ACO'
 
 (() => {
-
     // 最佳路程顯示標籤
     const bestDistanceValueTag = document.getElementById('bestDistanceValue')
     // 總城市數顯示標籤
@@ -85,7 +84,7 @@ import ACO from './modules/ACO'
             // 更新執行伐
             isRun = false
         }
-        // 運行螞蟻演算法 (是個非同步方法) 
+        // 運行螞蟻演算法 (是個非同步方法) Î
         aco.start()
 
         /*                      ACO API

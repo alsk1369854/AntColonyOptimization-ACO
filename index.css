@@ -1,6 +1,11 @@
 html,
 body {
+    /* 防止觸控螢幕連點放大 */
+    touch-action: manipulation;
+    
     height: 100%;
+    overflow:scroll;overflow-X:hidden;
+    overflow-Y:hidden;
 }
 
 html {

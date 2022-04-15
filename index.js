@@ -16,7 +16,6 @@ var _ACO2 = _interopRequireDefault(_ACO);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (function () {
-
     // 最佳路程顯示標籤
     var bestDistanceValueTag = document.getElementById('bestDistanceValue');
     // 總城市數顯示標籤
@@ -102,7 +101,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             // 更新執行伐
             isRun = false;
         };
-        // 運行螞蟻演算法 (是個非同步方法) 
+        // 運行螞蟻演算法 (是個非同步方法) Î
         aco.start();
 
         /*                      ACO API
@@ -453,8 +452,16 @@ var CanvasUtil = function () {
 
         // 創建畫布操作工具
         this.canvasTag = document.getElementById('canvas');
-        this.canvasTag.width = 800; // 450
-        this.canvasTag.height = 400;
+        if (window.screen.width <= 820) {
+            // phone
+            this.canvasTag.width = 400;
+            this.canvasTag.height = 400;
+        } else {
+            // PC
+            this.canvasTag.width = 800;
+            this.canvasTag.height = 400;
+        }
+
         this.ctx = this.canvasTag.getContext('2d');
     }
 
@@ -502,7 +509,6 @@ var CanvasUtil = function () {
     }, {
         key: 'drawPoint',
         value: function drawPoint(x, y) {
-
             this.ctx.fillStyle = "#334f96";
             this.ctx.beginPath();
             this.ctx.arc(x, y, 7, 0, 2 * Math.PI);
@@ -519,7 +525,6 @@ var CanvasUtil = function () {
                 startY = startPosition[1];
             var endX = endPosition[0],
                 endY = endPosition[1];
-
 
             this.ctx.strokeStyle = "#86a0e3";
             this.ctx.lineWidth = 3;
