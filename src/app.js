@@ -2,6 +2,10 @@ import CanvasUtil from './modules/CanvasUtil'
 import LoadingBar from './modules/LoadingBar'
 import ACO from './modules/ACO'
 
+/**
+ * @description 程式進入點，管控畫面選染與事件觸發
+ * @author alsk1369854@gmail.com
+ */
 (() => {
     // 最佳路程顯示標籤
     const bestDistanceValueTag = document.getElementById('bestDistanceValue')
@@ -27,8 +31,13 @@ import ACO from './modules/ACO'
         const { offsetX: x, offsetY: y } = event
         // 將點擊座標加入 pointList 中
         cityList.push([x, y])
+        // 清空畫布
+        CanvasUtil.clearCanvas()
         // 在畫布中劃出點擊點
-        CanvasUtil.drawPoint(x, y)
+        for (let i = 0; i < cityList.length; i++) {
+            const { [0]: x, [1]: y } = cityList[i]
+            CanvasUtil.drawPoint(x, y)
+        }
         // 更新總城市數
         updateTotalCityValue()
     })
@@ -45,7 +54,12 @@ import ACO from './modules/ACO'
             const y = Math.random() * (CanvasUtil.getHeight() - 30) + 15
             // 將點擊座標加入 pointList 中
             cityList.push([x, y])
-            // 在畫布中劃出點擊點
+        }
+        // 清空畫布
+        CanvasUtil.clearCanvas()
+        // 在畫布中劃出點擊點
+        for (let i = 0; i < cityList.length; i++) {
+            const { [0]: x, [1]: y } = cityList[i]
             CanvasUtil.drawPoint(x, y)
         }
         // 更新總城市數

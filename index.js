@@ -15,6 +15,10 @@ var _ACO2 = _interopRequireDefault(_ACO);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/**
+ * @description 程式進入點，管控畫面選染與事件觸發
+ * @author alsk1369854@gmail.com
+ */
 (function () {
     // 最佳路程顯示標籤
     var bestDistanceValueTag = document.getElementById('bestDistanceValue');
@@ -42,8 +46,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         // 將點擊座標加入 pointList 中
 
         cityList.push([x, y]);
+        // 清空畫布
+        _CanvasUtil2.default.clearCanvas();
         // 在畫布中劃出點擊點
-        _CanvasUtil2.default.drawPoint(x, y);
+        for (var i = 0; i < cityList.length; i++) {
+            var _cityList$i = cityList[i],
+                _x = _cityList$i[0],
+                _y = _cityList$i[1];
+
+            _CanvasUtil2.default.drawPoint(_x, _y);
+        }
         // 更新總城市數
         updateTotalCityValue();
     });
@@ -59,8 +71,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
             var y = Math.random() * (_CanvasUtil2.default.getHeight() - 30) + 15;
             // 將點擊座標加入 pointList 中
             cityList.push([x, y]);
-            // 在畫布中劃出點擊點
-            _CanvasUtil2.default.drawPoint(x, y);
+        }
+        // 清空畫布
+        _CanvasUtil2.default.clearCanvas();
+        // 在畫布中劃出點擊點
+        for (var _i = 0; _i < cityList.length; _i++) {
+            var _cityList$_i = cityList[_i],
+                _x2 = _cityList$_i[0],
+                _y2 = _cityList$_i[1];
+
+            _CanvasUtil2.default.drawPoint(_x2, _y2);
         }
         // 更新總城市數
         updateTotalCityValue();
@@ -179,6 +199,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * @description 螞蟻演算法類
+ * @author alsk1369854@gmail.com
+ */
 var AOC = function () {
     function AOC(cityList) {
         _classCallCheck(this, AOC);
@@ -214,6 +238,12 @@ var AOC = function () {
         // 存儲處理時間
         this.runTime = 0;
 
+        // 存算法執行狀態
+        this.STATE_NEW = 'NEW'; // 尚未執行 start()
+        this.STATE_RUNNING = 'RUNNING'; // 執行 start(), 正在進行計算
+        this.STATE_DONE = 'DONE'; // 計算完畢
+        this.state = this.NEW;
+
         // 距離矩陣與初始費洛蒙矩陣
         this.buildVisibilityMatrix(this.cityList);
         this.buildInitialPheromoneMatrix();
@@ -246,6 +276,11 @@ var AOC = function () {
             return routeIDList.map(function (cityID) {
                 return _this2.cityList[cityID];
             });
+        }
+    }, {
+        key: 'getState',
+        value: function getState() {
+            return this.state;
         }
 
         // 機算兩城市間的距離
@@ -353,6 +388,9 @@ var AOC = function () {
                 }
             }
         }
+
+        // Just Sleep
+
     }, {
         key: 'sleep',
         value: function sleep(sleepTime) {
@@ -368,10 +406,15 @@ var AOC = function () {
         value: async function start() {
             var _this3 = this;
 
-            // 初始化LoadingLine
+            // Start 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+            // 初始化LoadingLine 
             _LoadingBar2.default.setPersent(0);
             await this.sleep(1);
-            // 初始化執行時間
+            // End 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
+            // 更改生命週期裝態為計算中
+            this.state = this.STATE_RUNNING;
+            // 初始化執行時間，計算開始的時間
             var startTime = new Date();
 
             for (var i = 0; i < this.MaxIterations; i++) {
@@ -416,15 +459,26 @@ var AOC = function () {
                 // 更新費洛蒙舉矩陣
                 await this.updatePheromoneMatrix(currentIterationResultList);
 
+                // Start 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
                 // 更新畫面LoadingLine
                 _LoadingBar2.default.setPersent(Math.floor((i + 1) / this.MaxIterations * 100));
                 await this.sleep(1);
+                // End 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
             }
 
+            // 計算結束時間
             var endTime = new Date();
             this.runTime = Math.round((endTime - startTime) / 1000);
+            // 運行完成機算後的回調函數
             this.done();
+            // 更改生命週期裝態為完成計算
+            this.state = this.STATE_DONE;
         }
+
+        /**
+         * @description 演算法計算完成後自動呼叫，透過改寫此函數來設定結果的顯示
+         */
+
     }, {
         key: 'done',
         value: function done() {}
@@ -446,16 +500,24 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * @description 畫布操作工具
+ * @author alsk1369854@gmail.com
+ */
 var CanvasUtil = function () {
     function CanvasUtil() {
         _classCallCheck(this, CanvasUtil);
 
         // 創建畫布操作工具
         this.canvasTag = document.getElementById('canvas');
-        if (window.screen.width <= 820) {
+        if (window.screen.width <= 450) {
             // phone
-            this.canvasTag.width = 400;
-            this.canvasTag.height = 400;
+            this.canvasTag.width = Math.floor(window.screen.width * 0.95);
+            this.canvasTag.height = Math.floor(window.screen.width * 0.95);
+        } else if (window.screen.width <= 900) {
+            // phone
+            this.canvasTag.width = Math.floor(window.screen.width * 0.85);
+            this.canvasTag.height = Math.floor(window.screen.width * 0.85);
         } else {
             // PC
             this.canvasTag.width = 800;
@@ -550,6 +612,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * @description 畫面讀條操作工具
+ * @author alsk1369854@gmail.com
+ */
 var LoadingBar = function () {
     function LoadingBar() {
         _classCallCheck(this, LoadingBar);

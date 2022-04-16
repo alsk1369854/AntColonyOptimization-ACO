@@ -1,3 +1,7 @@
+/**
+ * @description 畫面讀條操作工具
+ * @author alsk1369854@gmail.com
+ */
 class LoadingBar {
     constructor() {
         this.loadingBarTag = document.getElementById('loadingBar')

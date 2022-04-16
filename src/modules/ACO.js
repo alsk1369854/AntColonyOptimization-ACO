@@ -1,6 +1,10 @@
 import LoadingBar from './LoadingBar'
 import CanvasUtil from './CanvasUtil'
 
+/**
+ * @description 螞蟻演算法類
+ * @author alsk1369854@gmail.com
+ */
 export default class AOC {
     constructor(cityList) {
         this.cityList = [...cityList]
@@ -32,6 +36,12 @@ export default class AOC {
         // 存儲處理時間
         this.runTime = 0;
 
+        // 存算法執行狀態
+        this.STATE_NEW = 'NEW' // 尚未執行 start()
+        this.STATE_RUNNING = 'RUNNING' // 執行 start(), 正在進行計算
+        this.STATE_DONE = 'DONE' // 計算完畢
+        this.state = this.NEW
+
         // 距離矩陣與初始費洛蒙矩陣
         this.buildVisibilityMatrix(this.cityList)
         this.buildInitialPheromoneMatrix()
@@ -48,6 +58,9 @@ export default class AOC {
     }
     getRoute(routeIDList) {
         return routeIDList.map(cityID => this.cityList[cityID])
+    }
+    getState(){
+        return this.state
     }
 
     // 機算兩城市間的距離
@@ -131,16 +144,22 @@ export default class AOC {
         }
     }
 
+    // Just Sleep
     sleep(sleepTime) {
         return new Promise(r => setTimeout(r, sleepTime))
     }
 
     // 運行計算
     async start() {
-        // 初始化LoadingLine
+        // Start 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+        // 初始化LoadingLine 
         LoadingBar.setPersent(0)
         await this.sleep(1)
-        // 初始化執行時間
+        // End 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+        
+        // 更改生命週期裝態為計算中
+        this.state = this.STATE_RUNNING
+        // 初始化執行時間，計算開始的時間
         const startTime = new Date()
 
         for (let i = 0; i < this.MaxIterations; i++) { // 每個回合
@@ -178,14 +197,25 @@ export default class AOC {
             // 更新費洛蒙舉矩陣
             await this.updatePheromoneMatrix(currentIterationResultList)
 
+                
+            // Start 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
             // 更新畫面LoadingLine
             LoadingBar.setPersent(Math.floor((i + 1) / this.MaxIterations * 100))
             await this.sleep(1)
+            // End 更新畫面讀條 (必要可刪) ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
         }
 
+        // 計算結束時間
         const endTime = new Date()
         this.runTime = Math.round((endTime - startTime) / 1000)
+        // 運行完成機算後的回調函數
         this.done()
+        // 更改生命週期裝態為完成計算
+        this.state = this.STATE_DONE
     }
+
+    /**
+     * @description 演算法計算完成後自動呼叫，透過改寫此函數來設定結果的顯示
+     */
     done() { }
 };

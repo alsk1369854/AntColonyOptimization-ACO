@@ -1,12 +1,20 @@
+
+/**
+ * @description 畫布操作工具
+ * @author alsk1369854@gmail.com
+ */
 class CanvasUtil {
     constructor() {
         // 創建畫布操作工具
         this.canvasTag = document.getElementById('canvas')
-        if(window.screen.width <= 820){ // phone
-            this.canvasTag.width = 400 
-            this.canvasTag.height = 400
-        }else{ // PC
-            this.canvasTag.width = 800 
+        if (window.screen.width <= 450) { // phone
+            this.canvasTag.width = Math.floor(window.screen.width * 0.95)
+            this.canvasTag.height = Math.floor(window.screen.width * 0.95)
+        } else if (window.screen.width <= 900) { // ipad
+            this.canvasTag.width = Math.floor(window.screen.width * 0.85)
+            this.canvasTag.height = Math.floor(window.screen.width * 0.85)
+        } else { // PC
+            this.canvasTag.width = 800
             this.canvasTag.height = 400
         }
 
@@ -33,7 +41,7 @@ class CanvasUtil {
     getContext2D() {
         return this.ctx
     }
-    
+
     // 清空畫布
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvasTag.width, this.canvasTag.height);
