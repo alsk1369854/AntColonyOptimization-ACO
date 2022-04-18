@@ -40,7 +40,11 @@ export default class AOC {
         this.STATE_NEW = 'NEW' // 尚未執行 start()
         this.STATE_RUNNING = 'RUNNING' // 執行 start(), 正在進行計算
         this.STATE_DONE = 'DONE' // 計算完畢
+        this.STATE_DELETE = 'DELETE' // 被刪除了
         this.state = this.NEW
+
+        // 存儲是否被刪除
+        this.isDelete = false
 
         // 距離矩陣與初始費洛蒙矩陣
         this.buildVisibilityMatrix(this.cityList)
@@ -61,6 +65,9 @@ export default class AOC {
     }
     getState(){
         return this.state
+    }
+    delete(){
+        this.isDelete = true
     }
 
     // 機算兩城市間的距離
@@ -163,6 +170,8 @@ export default class AOC {
         const startTime = new Date()
 
         for (let i = 0; i < this.MaxIterations; i++) { // 每個回合
+            // 判斷物件是否被刪除了
+            if(this.isDelete) return this.state = this.STATE_DELETE
             // 準備一個List，存儲每隻螞蟻的結果
             let currentIterationResultList = []
             for (let j = 0; j < this.ColonySize; j++) { // 每隻螞蟻

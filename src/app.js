@@ -19,6 +19,9 @@ import ACO from './modules/ACO'
     // 執行伐
     let isRun = false
 
+    // 存儲執行中的算法對象
+    let aco = null
+
     const updateTotalCityValue = () => {
         cityAmount = cityList.length
         totalCityValueTag.innerHTML = cityAmount
@@ -77,7 +80,7 @@ import ACO from './modules/ACO'
         runTimeValueTage.innerHTML = 0
 
         // 創建螞蟻演算法
-        const aco = new ACO(cityList)
+        aco = new ACO(cityList)
         // 設定演算法跑完後的回釣函數 (演算採用非同步方法) 
         aco.done = () => {
             // 獲取最終結果
@@ -142,7 +145,11 @@ import ACO from './modules/ACO'
     // 綁定重置按鈕點擊事件
     const resetBtn = document.getElementById('resetBtn')
     resetBtn.addEventListener('click', event => {
-        if (isRun) return
+        // if (isRun) return
+        aco.delete()
+        aco = null
+        isRun = false
+
         // 清空畫布
         CanvasUtil.clearCanvas();
         // 初始畫讀條

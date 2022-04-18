@@ -22,7 +22,6 @@ body {
 }
 
 .myBtn {
-    margin: 0px 10px;
     border-radius: 10px;
     height: 50px;
     width: 200px;
@@ -32,8 +31,6 @@ body {
 }
 
 .myAddRandomBtn {
-    margin: 0px;
-    padding: 0px 20px;
     border-radius: 10px;
     height: 50px;
     width: 200px;
@@ -46,6 +43,11 @@ body {
     color: #fff;
     background-color: #4668bf;
     border-color: #4668bf;
+}
+
+.form-check-input:checked{
+    background-color: #698ade;
+    border-color: #698ade;
 }
 
 #canvas {
@@ -117,7 +119,10 @@ body {
     width: 100%;
 }
 
-.addRandomBar {
+.buttonBar,
+.inputBar {
+    display: flex;
+    width: 50%;
     margin: 10px;
 }
 
@@ -129,6 +134,12 @@ body {
     .loadingBar {
         width: 80%;
     }
+
+    .buttonBar,
+    .inputBar {
+        width: 75%;
+    }
+
 }
 
 @media screen and (max-width:450px) {

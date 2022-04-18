@@ -32,6 +32,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     // 執行伐
     var isRun = false;
 
+    // 存儲執行中的算法對象
+    var aco = null;
+
     var updateTotalCityValue = function updateTotalCityValue() {
         cityAmount = cityList.length;
         totalCityValueTag.innerHTML = cityAmount;
@@ -97,7 +100,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
         runTimeValueTage.innerHTML = 0;
 
         // 創建螞蟻演算法
-        var aco = new _ACO2.default(cityList);
+        aco = new _ACO2.default(cityList);
         // 設定演算法跑完後的回釣函數 (演算採用非同步方法) 
         aco.done = function () {
             // 獲取最終結果
@@ -162,7 +165,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     // 綁定重置按鈕點擊事件
     var resetBtn = document.getElementById('resetBtn');
     resetBtn.addEventListener('click', function (event) {
-        if (isRun) return;
+        // if (isRun) return
+        aco.delete();
+        aco = null;
+        isRun = false;
+
         // 清空畫布
         _CanvasUtil2.default.clearCanvas();
         // 初始畫讀條
@@ -242,7 +249,11 @@ var AOC = function () {
         this.STATE_NEW = 'NEW'; // 尚未執行 start()
         this.STATE_RUNNING = 'RUNNING'; // 執行 start(), 正在進行計算
         this.STATE_DONE = 'DONE'; // 計算完畢
+        this.STATE_DELETE = 'DELETE'; // 被刪除了
         this.state = this.NEW;
+
+        // 存儲是否被刪除
+        this.isDelete = false;
 
         // 距離矩陣與初始費洛蒙矩陣
         this.buildVisibilityMatrix(this.cityList);
@@ -281,6 +292,11 @@ var AOC = function () {
         key: 'getState',
         value: function getState() {
             return this.state;
+        }
+    }, {
+        key: 'delete',
+        value: function _delete() {
+            this.isDelete = true;
         }
 
         // 機算兩城市間的距離
@@ -419,6 +435,8 @@ var AOC = function () {
 
             for (var i = 0; i < this.MaxIterations; i++) {
                 // 每個回合
+                // 判斷物件是否被刪除了
+                if (this.isDelete) return this.state = this.STATE_DELETE;
                 // 準備一個List，存儲每隻螞蟻的結果
                 var currentIterationResultList = [];
 
@@ -515,7 +533,7 @@ var CanvasUtil = function () {
             this.canvasTag.width = Math.floor(window.screen.width * 0.95);
             this.canvasTag.height = Math.floor(window.screen.width * 0.95);
         } else if (window.screen.width <= 900) {
-            // phone
+            // ipad
             this.canvasTag.width = Math.floor(window.screen.width * 0.85);
             this.canvasTag.height = Math.floor(window.screen.width * 0.85);
         } else {
