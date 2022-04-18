@@ -49,6 +49,7 @@ class CanvasUtil {
 
     // 畫點
     drawPoint(x, y) {
+        this.ctx.strokeStyle = "#86a0e3"
         this.ctx.fillStyle = "#334f96"
         this.ctx.beginPath();
         this.ctx.arc(x, y, 7, 0, 2 * Math.PI)

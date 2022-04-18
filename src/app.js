@@ -146,8 +146,10 @@ import ACO from './modules/ACO'
     const resetBtn = document.getElementById('resetBtn')
     resetBtn.addEventListener('click', event => {
         // if (isRun) return
-        aco.delete()
-        aco = null
+        if (aco !== null) {
+            aco.delete()
+            aco = null
+        }
         isRun = false
 
         // 清空畫布

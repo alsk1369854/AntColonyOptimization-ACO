@@ -166,8 +166,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     var resetBtn = document.getElementById('resetBtn');
     resetBtn.addEventListener('click', function (event) {
         // if (isRun) return
-        aco.delete();
-        aco = null;
+        if (aco !== null) {
+            aco.delete();
+            aco = null;
+        }
         isRun = false;
 
         // 清空畫布
@@ -589,6 +591,7 @@ var CanvasUtil = function () {
     }, {
         key: 'drawPoint',
         value: function drawPoint(x, y) {
+            this.ctx.strokeStyle = "#86a0e3";
             this.ctx.fillStyle = "#334f96";
             this.ctx.beginPath();
             this.ctx.arc(x, y, 7, 0, 2 * Math.PI);
