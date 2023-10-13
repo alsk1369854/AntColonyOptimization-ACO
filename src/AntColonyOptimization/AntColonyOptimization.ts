@@ -1,15 +1,17 @@
 import AntColonyOptimizationOption from "./interfaces/AntColonyOptimizationOption";
 import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimizationOptionState";
-import Vector2D from "./interfaces/Vector2D";
-import Vector3D from "./interfaces/Vector3D";
+import AntTripResult from "./libs/AntTripResult";
+import Vector from "./interfaces/Vector";
+import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
 
-export default class AntColonyOptimization {
+export default class AntColonyOptimization<V extends Vector> {
   /**
    * 預設配置參數
    */
   static readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState = {
     antAmount: 30,
-    maximumIterations: 200,
+    maximumRounds: 200,
+    onRoundEnds: (_: AntColonyOptimizationResult<Vector>) => {},
     initialPheromone: 1,
     pheromoneIncrement: 1,
     pheromoneWeakeningRate: 0.1,
@@ -20,7 +22,7 @@ export default class AntColonyOptimization {
   /**
    * 向量序列
    */
-  private readonly vector3DList: Vector3D[];
+  private readonly vectorList: V[];
 
   /**
    * 配置參數
@@ -42,55 +44,187 @@ export default class AntColonyOptimization {
    */
   private pheromoneMatrix: number[][];
 
-  constructor(
-    vectorList: Vector2D[] | Vector3D[],
-    option?: AntColonyOptimizationOption
-  ) {
-    this.vector3DList = this.getInitVector3DList(vectorList);
+  /**
+   * 每回合的歷史結果
+   */
+  private roundResultHistory: AntColonyOptimizationResult<V>[] = [];
+
+  /**
+   * 螞蟻演算法計算結果
+   */
+  private result: Promise<AntColonyOptimizationResult<V> | undefined>;
+
+  constructor(vectorList: V[], option?: AntColonyOptimizationOption) {
+    // this.vectorList = this.getInitVector3DList(vectorList);
+    this.vectorList = vectorList;
+    this.checkVectorListValidity(this.vectorList);
+
     this.optionState = this.getInitOptionState(option);
-    this.distanceMatrix = this.getInitDistanceMatrix(this.vector3DList);
+    this.checkOptionStateValidity(this.optionState);
+
+    this.distanceMatrix = this.getInitDistanceMatrix(this.vectorList);
     this.visibilityMatrix = this.getInitVisibilityMatrix(this.distanceMatrix);
-    this.pheromoneMatrix = this.getInitPheromoneMatrix(this.vector3DList);
+    this.pheromoneMatrix = this.getInitPheromoneMatrix(this.vectorList);
+
+    this.result = this.start();
   }
 
-  private async start() {
-    // 每次迭代
+  /**
+   * 獲得 螞蟻演算法計算結果
+   * @returns 螞蟻演算法計算結果
+   */
+  public async getResult(): Promise<
+    AntColonyOptimizationResult<V> | undefined
+  > {
+    return await this.result;
+  }
+
+  /**
+   * 獲得 當前進度的回合歷史結果
+   * @returns 當前進度的回合歷史結果
+   */
+  public getRoundResultHistory(): AntColonyOptimizationResult<V>[] {
+    return this.roundResultHistory;
+  }
+
+  /**
+   * 開始計算螞蟻演算法
+   * @returns 螞蟻演算法計算結果
+   */
+  private async start(): Promise<AntColonyOptimizationResult<V> | undefined> {
+    let result: AntColonyOptimizationResult<V> | undefined = undefined;
+
+    /**
+     * 最佳的螞蟻旅行結果
+     */
+    let bestAntTripResult: AntTripResult<V> | undefined = undefined;
+
+    // 每回合
     for (
       let roundCount = 0;
-      roundCount < this.optionState.maximumIterations;
+      roundCount < this.optionState.maximumRounds;
       roundCount++
     ) {
       // 每隻螞蟻
-      let eachAntsResult: number[][] = [];
-      let currentAntResult: number[] = [];
+      // 所有螞蟻的旅途(經過向量的 Index)結果
+      let antsTripIndexList: number[][] = [];
+      let currentAntTripIndexList: number[] = [];
       for (
         let antCount = 0;
         antCount < this.optionState.antAmount;
         antCount++
       ) {
         // 螞蟻起始準備
-        let candidateVectorMap: Map<number, Vector3D> =
-          this.getInitCandidateVectorMap(this.vector3DList);
+        let candidateVectorMap: Map<number, V> = this.getInitCandidateVectorMap(
+          this.vectorList
+        );
         let currentVectorIndex: number = this.pickRandomKey(candidateVectorMap);
-        currentAntResult = [currentVectorIndex];
+        currentAntTripIndexList = [currentVectorIndex];
 
         // 每個向量，走遍所有向量，i = 1 (扣除起始點)
-        for (let i = 1; 1 < this.vector3DList.length; i++) {
-          currentVectorIndex = this.pickRouletteWheelKey(
+        for (let i = 1; 1 < this.vectorList.length; i++) {
+          currentVectorIndex = this.pickKeyByRouletteWheel(
             currentVectorIndex,
             candidateVectorMap
           );
-          currentAntResult.push(currentVectorIndex);
+          currentAntTripIndexList.push(currentVectorIndex);
+        }
+        // 回到起點，行程一個環
+        currentAntTripIndexList.push(currentAntTripIndexList[0]);
+
+        // 添加至本回合解果集
+        antsTripIndexList.push(currentAntTripIndexList);
+      }
+      // 更新費洛蒙舉矩陣
+      const antsTripResultList: AntTripResult<V>[] = antsTripIndexList.map(
+        (antTripIndexList) => this.getAntTripResult(antTripIndexList)
+      );
+      this.pheromoneMatrix =
+        this.getNextRoundPheromonMatrix(antsTripResultList);
+
+      // 更新歷史最佳解果
+      const roundBestAntTripResult: AntTripResult<V> =
+        this.getBestAntTripResult(antsTripResultList);
+      if (bestAntTripResult === undefined) {
+        bestAntTripResult = roundBestAntTripResult;
+      } else {
+        if (roundBestAntTripResult.betterThen(bestAntTripResult)) {
+          bestAntTripResult = roundBestAntTripResult;
         }
       }
-      eachAntsResult.push(currentAntResult);
+
+      // 更新結果
+      result = {
+        roundCount,
+        antsTripResultList,
+        roundBestAntTripResult,
+        bestAntTripResult,
+      };
+      this.roundResultHistory.push(result);
+
+      // 執行回合結束回調
+      this.optionState.onRoundEnds(result, this.roundResultHistory);
     }
-    // 更新費洛蒙舉矩陣
+
+    return result;
   }
 
-  private updatePheromonMatrix(eachAntsResult: number[][]) {
-    this.pheromoneMatrix = this.getPheromoneMatrixWeakening(
+  /**
+   * 獲取回合結果集中的最佳結果
+   * @param antsTripResultList 回合結果集
+   * @returns 最佳結果
+   */
+  private getBestAntTripResult(
+    antsTripResultList: AntTripResult<V>[]
+  ): AntTripResult<V> {
+    return antsTripResultList.reduce((bestAntTripResult, antTripResult) => {
+      if (antTripResult.betterThen(bestAntTripResult)) {
+        return antTripResult;
+      }
+      return bestAntTripResult;
+    }, antsTripResultList[0]);
+  }
+
+  /**
+   * 獲取 下一回合的 費洛蒙矩陣
+   * @param antsTripResultList 此回合所有螞蟻的旅行結果
+   * @returns 下一回合的 費洛蒙矩陣
+   */
+  private getNextRoundPheromonMatrix(
+    antsTripResultList: AntTripResult<V>[]
+  ): number[][] {
+    // 基本增量
+    let nextPheromoneMatrix = this.getPheromoneMatrixWeakening(
       this.optionState.pheromoneWeakeningRate
+    );
+
+    // 旅程路線增量
+    antsTripResultList.forEach((antTripResult) => {
+      const pheromoneIncrease: number =
+        this.optionState.pheromoneIncrement / antTripResult.distance;
+
+      let prevVectorIndex: number = -1;
+      antTripResult.tripIndexList.forEach((currVectorIndex) => {
+        if (prevVectorIndex !== -1) {
+          nextPheromoneMatrix[prevVectorIndex][currVectorIndex] +=
+            pheromoneIncrease;
+        }
+        prevVectorIndex = currVectorIndex;
+      });
+    });
+    return nextPheromoneMatrix;
+  }
+
+  /**
+   * 獲取 螞蟻旅行結果
+   * @param antTripIndexList 螞蟻旅行經過的向量 index 途徑
+   * @returns 螞蟻旅行結果
+   */
+  private getAntTripResult(antTripIndexList: number[]): AntTripResult<V> {
+    return new AntTripResult<V>(
+      this.vectorList,
+      this.distanceMatrix,
+      antTripIndexList
     );
   }
 
@@ -113,9 +247,9 @@ export default class AntColonyOptimization {
    * @param candidateVectorMap 候選的向量 Map (key 將會被挑起)
    * @returns 下個前往的向量 Key ; index
    */
-  private pickRouletteWheelKey(
+  private pickKeyByRouletteWheel(
     currentVectorIndex: number,
-    candidateVectorMap: Map<number, Vector3D>
+    candidateVectorMap: Map<number, V>
   ): number {
     // 機算前往每個候選向量的機率
     const candidateVectorProbabilityMap: Map<number, number> =
@@ -152,7 +286,7 @@ export default class AntColonyOptimization {
    */
   private getInitCandidateVectorProbabilityMap(
     currentVectorIndex: number,
-    candidateVectorMap: Map<number, Vector3D>
+    candidateVectorMap: Map<number, V>
   ): Map<number, number> {
     let result: Map<number, number> = new Map();
 
@@ -205,28 +339,26 @@ export default class AntColonyOptimization {
 
   /**
    * [初始化] 獲取 候選向量 Map 物件
-   * @param vector3DList 向量序列
+   * @param vectorList 向量序列
    * @returns 候選向量 Map 物件
    */
-  private getInitCandidateVectorMap(
-    vector3DList: Vector3D[]
-  ): Map<number, Vector3D> {
-    let result: Map<number, Vector3D> = new Map();
-    this.vector3DList.forEach((vector, i) => {
+  private getInitCandidateVectorMap(vectorList: V[]): Map<number, V> {
+    let result: Map<number, V> = new Map();
+    this.vectorList.forEach((vector, i) => {
       result.set(i, vector);
     });
 
-    return this.getInitCandidateVectorMap(vector3DList);
+    return this.getInitCandidateVectorMap(vectorList);
   }
 
   /**
    * [初始化] 獲取 this.pheromoneMatrix 初始值
-   * @param vector3DList 向量序列
+   * @param vectorList 向量序列
    * @returns this.pheromoneMatrix 初始值
    */
-  private getInitPheromoneMatrix(vector3DList: Vector3D[]): number[][] {
-    return vector3DList.map(() => {
-      return vector3DList.map(() => {
+  private getInitPheromoneMatrix(vectorList: V[]): number[][] {
+    return vectorList.map(() => {
+      return vectorList.map(() => {
         return this.optionState.initialPheromone;
       });
     });
@@ -247,19 +379,25 @@ export default class AntColonyOptimization {
 
   /**
    * [初始化] 獲取 this.distanceMatrix 初始值
-   * @param vector3DList 向量序列
+   * @param vectorList 向量序列
    * @returns this.distanceMatrix 初始值
    */
-  private getInitDistanceMatrix(vector3DList: Vector3D[]): number[][] {
-    function getDistance(vectorA: Vector3D, vectorB: Vector3D): number {
-      return Math.sqrt(
-        Math.pow(vectorA.x - vectorB.x, 2) +
-          Math.pow(vectorA.y - vectorB.y, 2) +
-          Math.pow(vectorA.z - vectorB.z, 2)
-      );
+  private getInitDistanceMatrix(vectorList: V[]): number[][] {
+    function getDistance(vectorA: V, vectorB: V): number {
+      let result: number =
+        Math.pow(vectorA.x - vectorB.x, 2) + Math.pow(vectorA.y - vectorB.y, 2);
+
+      // @ts-ignore
+      const aZ: number = vectorA.z ?? 0;
+      // @ts-ignore
+      const bZ: number = vectorB.z ?? 0;
+      result += Math.pow(aZ - bZ, 2);
+
+      result = Math.sqrt(result);
+      return result;
     }
-    return vector3DList.map((vectorI, i) => {
-      return vector3DList.map((vectorJ, j) => {
+    return vectorList.map((vectorI, i) => {
+      return vectorList.map((vectorJ, j) => {
         return getDistance(vectorI, vectorJ);
       });
     });
@@ -280,17 +418,49 @@ export default class AntColonyOptimization {
   }
 
   /**
-   * [初始化] 獲取 this.vector3DList 初始值
-   * @param vectorList 向量類序列
-   * @returns this.vector3DList 初始值
+   * [驗證] 檢查 vectorList 是否合規
+   * @param vectorList Vectory[] 物件
+   * @returns 是否合規
    */
-  private getInitVector3DList(vectorList: Vector2D[] | Vector3D[]): Vector3D[] {
-    return vectorList.map((vector) => {
-      const vector3D = vector as Vector3D;
-      if (vector3D.z === undefined) {
-        vector3D.z = 0;
-      }
-      return { x: vector3D.x, y: vector3D.y, z: vector3D.z };
-    });
+  private checkVectorListValidity(vectorList: V[]): boolean {
+    if (vectorList.length === 0) {
+      throw new Error(`vectorList 不可為空陣列`);
+    }
+
+    return true;
   }
+
+  /**
+   * [驗證] 檢查 optionState 是否合規
+   * @param optionState AntColonyOptimizationOptionState 物件
+   * @returns 是否合規
+   */
+  private checkOptionStateValidity(
+    optionState: AntColonyOptimizationOptionState
+  ): boolean {
+    if (optionState.maximumRounds <= 0) {
+      throw new Error(`optionState.maximumRounds 必須大於 0`);
+    }
+
+    if (optionState.antAmount <= 0) {
+      throw new Error(`optionState.antAmount 必須大於 0`);
+    }
+
+    return true;
+  }
+
+  // /**
+  //  * [初始化] 獲取 this.vectorList 初始值
+  //  * @param vectorList 向量類序列
+  //  * @returns this.vectorList 初始值
+  //  */
+  // private getInitVector3DList(vectorList: V[]): V[] {
+  //   return vectorList.map((vector) => {
+  //     const vector3D = vector as V;
+  //     if (vector3D.z === undefined) {
+  //       vector3D.z = 0;
+  //     }
+  //     return { x: vector3D.x, y: vector3D.y, z: vector3D.z };
+  //   });
+  // }
 }
