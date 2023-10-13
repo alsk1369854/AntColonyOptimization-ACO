@@ -1,6 +1,5 @@
-import { Vector3D } from "@alsk1369854/ant-colony-optimization";
+import Vector3D from "./Vector3D";
 import AntColonyOptimizationResult from "./AntColonyOptimizationResult";
-import Vector from "./Vector";
 
 export default interface AntColonyOptimizationOptionState {
   /**
