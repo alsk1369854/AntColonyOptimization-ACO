@@ -126,14 +126,15 @@ export default class AntColonyOptimization<V extends Vector> {
         let currentVectorIndex: number = this.pickRandomKey(candidateVectorMap);
         currentAntTripIndexList = [currentVectorIndex];
 
-        // 每個向量，走遍所有向量，i = 1 (扣除起始點)
-        for (let i = 1; 1 < this.vectorList.length; i++) {
+        // 走遍所有候選向量
+        while (candidateVectorMap.size !== 0) {
           currentVectorIndex = this.pickKeyByRouletteWheel(
             currentVectorIndex,
             candidateVectorMap
           );
           currentAntTripIndexList.push(currentVectorIndex);
         }
+
         // 回到起點，行程一個環
         currentAntTripIndexList.push(currentAntTripIndexList[0]);
 
@@ -352,8 +353,7 @@ export default class AntColonyOptimization<V extends Vector> {
     this.vectorList.forEach((vector, i) => {
       result.set(i, vector as V);
     });
-
-    return this.getInitCandidateVectorMap(vectorList);
+    return result;
   }
 
   /**
