@@ -1,7 +1,7 @@
-export * from "./AntColonyOptimization";
-export * from "./modules/AntTripResult";
-export * from "./interfaces/AntColonyOptimizationOption";
-export * from "./interfaces/AntColonyOptimizationResult";
-export * from "./interfaces/Vector";
-export * from "./interfaces/Vector2D";
-export * from "./interfaces/Vector3D";
+export { default as AntColonyOptimization } from "./AntColonyOptimization";
+export { default as AntTripResult } from "./modules/AntTripResult";
+export { default as AntColonyOptimizationOption } from "./interfaces/AntColonyOptimizationOption";
+export { default as AntColonyOptimizationResult } from "./interfaces/AntColonyOptimizationResult";
+export { default as Vector } from "./interfaces/Vector";
+export { default as Vector2D } from "./interfaces/Vector2D";
+export { default as Vector3D } from "./interfaces/Vector3D";

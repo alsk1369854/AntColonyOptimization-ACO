@@ -1,8 +1,23 @@
-import AntColonyOptimization from "../../dist/AntColonyOptimization/AntColonyOptimization";
-import Vector2D from "../../dist/AntColonyOptimization/interfaces/Vector2D";
+import { AntColonyOptimization, Vector3D, Vector2D } from "../../dist";
 import CanvasUtil from "./utils/CanvasUtil";
 
-AntColonyOptimization;
+function getRandomVector(max: number): Vector3D {
+  return {
+    x: Math.floor(Math.random() * max),
+    y: Math.floor(Math.random() * max),
+    z: Math.floor(Math.random() * max),
+  };
+}
+
+// 向量序列
+const vectorList: Vector3D[] = new Array(5).fill(getRandomVector(10));
+
+// 蟻群優化算法
+const aco: AntColonyOptimization<Vector3D> = new AntColonyOptimization(
+  vectorList
+);
+// 獲得運算結果
+aco.getResult().then((result) => console.log(result));
 
 // 最佳路程顯示標籤
 let bestDistanceValueTag: HTMLSpanElement = document.getElementById(
@@ -24,9 +39,6 @@ const canvasElement = CanvasUtil.getCanvasElement("canvas");
 let cityList: number[][] = [];
 // 執行伐
 let isRun = false;
-
-// 存儲執行中的算法對象
-let aco = null;
 
 const updateTotalCityValue = () => {
   cityAmount = cityList.length;

@@ -1,26 +1,31 @@
 # Ant Colony Optimization
 
-<a target='_blank' href='https://alsk1369854.github.io/AntColonyOptimization-ACO'>
-<p align="center">
-    <img width='400' src='https://raw.githubusercontent.com/alsk1369854/AntColonyOptimization-ACO/master/screenshots/SystemPage.gif'/>
-</p>
-</a>
+- <a target='_blank' href='https://alsk1369854.github.io/AntColonyOptimization-ACO'>Demo</a>
 
-<br/>
+### Example
 
-+ Demo:
-    + <a target='_blank' href='https://alsk1369854.github.io/AntColonyOptimization-ACO'>Demo Page</a>
+#### index.ts
 
-<br/>
+```ts
+import { AntColonyOptimization, Vector3D, Vector2D } from "../../dist";
 
-### development  
-```shell
-npm install
+function getRandomVector(max: number): Vector3D {
+  return {
+    x: Math.floor(Math.random() * max),
+    y: Math.floor(Math.random() * max),
+    z: Math.floor(Math.random() * max),
+  };
+}
 
-# create index.js
-npm run build
+// 向量序列
+const vectorList: Vector3D[] = new Array(5).fill(getRandomVector(10));
+
+// 蟻群優化算法
+const aco: AntColonyOptimization<Vector3D> = new AntColonyOptimization(
+  vectorList
+);
+// 獲得運算結果
+aco.getResult().then((result) => console.log(result));
 ```
-
-<br/>
 
 #### _END_
