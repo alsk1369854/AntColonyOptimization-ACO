@@ -5,7 +5,7 @@
 ### Install
 
 ```bash
-npm install ant_colony_optimization
+npm install @alsk1369854/ant-colony-optimization
 ```
 
 ### Example
@@ -17,7 +17,7 @@ import {
   AntColonyOptimization,
   Vector3D,
   Vector2D,
-} from "ant-colony-optimization";
+} from "@alsk1369854/ant-colony-optimization";
 
 function getRandomVector(max: number): Vector3D {
   return {
