@@ -9,19 +9,20 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 預設配置參數
    */
-  private readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState<V> = {
-    antAmount: 30,
-    maximumRounds: 200,
-    onRoundEnds: (
-      result: AntColonyOptimizationResult<V>,
-      roundResultHistory: AntColonyOptimizationResult<V>[]
-    ): boolean | void => {},
-    initialPheromone: 1,
-    pheromoneIncrement: 1,
-    pheromoneWeakeningRate: 0.1,
-    pheromoneWeight: 1,
-    distanceWeight: 3,
-  };
+  private static readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState =
+    {
+      antAmount: 30,
+      maximumRounds: 200,
+      onRoundEnds: (
+        result: AntColonyOptimizationResult<Vector3D>,
+        roundResultHistory: AntColonyOptimizationResult<Vector3D>[]
+      ): boolean | void => {},
+      initialPheromone: 1,
+      pheromoneIncrement: 1,
+      pheromoneWeakeningRate: 0.1,
+      pheromoneWeight: 1,
+      distanceWeight: 3,
+    };
 
   /**
    * 向量序列
@@ -31,7 +32,7 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 配置參數
    */
-  private readonly optionState: AntColonyOptimizationOptionState<V>;
+  private readonly optionState: AntColonyOptimizationOptionState;
 
   /**
    * 距離矩陣
@@ -56,7 +57,7 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 螞蟻演算法計算結果
    */
-  private result: Promise<AntColonyOptimizationResult<V> | undefined>;
+  private result: Promise<AntColonyOptimizationResult<V>>;
 
   /**
    * 構造器
@@ -84,9 +85,7 @@ export default class AntColonyOptimization<V extends Vector> {
    * 獲得 螞蟻演算法計算結果
    * @returns 螞蟻演算法計算結果
    */
-  public async getResult(): Promise<
-    AntColonyOptimizationResult<V> | undefined
-  > {
+  public async getResult(): Promise<AntColonyOptimizationResult<V>> {
     return await this.result;
   }
 
@@ -105,7 +104,7 @@ export default class AntColonyOptimization<V extends Vector> {
   private async start(
     maximumRounds: number,
     antAmount: number
-  ): Promise<AntColonyOptimizationResult<V> | undefined> {
+  ): Promise<AntColonyOptimizationResult<V>> {
     let result: AntColonyOptimizationResult<V> | undefined = undefined;
 
     /**
@@ -116,15 +115,14 @@ export default class AntColonyOptimization<V extends Vector> {
     // 每回合
     for (let roundCount = 0; roundCount < maximumRounds; roundCount++) {
       // 本回合所有螞蟻的旅行結果
-      const antsTripIndexList: number[][] = await this.roundStart(antAmount);
+      const antsTripIndexList: number[][] = this.roundStart(antAmount);
 
       // 更新費洛蒙舉矩陣
       const antsTripResultList: AntTripResult<V>[] = antsTripIndexList.map(
         (antTripIndexList) => this.getAntTripResult(antTripIndexList)
       );
-      this.pheromoneMatrix = await this.getNextRoundPheromonMatrix(
-        antsTripResultList
-      );
+      this.pheromoneMatrix =
+        this.getNextRoundPheromonMatrix(antsTripResultList);
 
       // 更新歷史最佳解果
       const roundBestAntTripResult: AntTripResult<V> =
@@ -147,10 +145,16 @@ export default class AntColonyOptimization<V extends Vector> {
       this.roundResultHistory.push(result);
 
       // 執行回合結束回調
-      this.optionState.onRoundEnds(result, this.roundResultHistory);
+      this.optionState.onRoundEnds(
+        result as AntColonyOptimizationResult<Vector3D>,
+        this.roundResultHistory as AntColonyOptimizationResult<Vector3D>[]
+      );
+
+      // 讓任務進入宏任務，防止頁面渲染因計算變卡頓
+      await this.sleep(0);
     }
 
-    return result;
+    return result as AntColonyOptimizationResult<V>;
   }
 
   /**
@@ -158,16 +162,14 @@ export default class AntColonyOptimization<V extends Vector> {
    * @param antAmount 螞蟻數量
    * @returns 本回合所有螞蟻的旅行結果
    */
-  private async roundStart(antAmount: number): Promise<number[][]> {
+  private roundStart(antAmount: number): number[][] {
     // 所有螞蟻的旅途(經過向量的 Index)結果集合
     let antsTripIndexList: number[][] = [];
 
     // 每一隻螞蟻
     for (let antCount = 0; antCount < antAmount; antCount++) {
       // 本隻螞蟻旅行路徑
-      const antTripIndexList: number[] = await this.antTripStart(
-        this.vectorList
-      );
+      const antTripIndexList: number[] = this.antTripStart(this.vectorList);
 
       // 添加至本回合結果集
       antsTripIndexList.push(antTripIndexList);
@@ -179,7 +181,7 @@ export default class AntColonyOptimization<V extends Vector> {
    * 送一隻螞蟻出去走一趟旅程
    * @returns 此之螞蟻依序走訪的向量 index 序列
    */
-  private async antTripStart(vectoryList: Vector3D[]): Promise<number[]> {
+  private antTripStart(vectoryList: Vector3D[]): number[] {
     let antTripIndexList: number[] = [];
 
     // 螞蟻起始準備
@@ -223,9 +225,9 @@ export default class AntColonyOptimization<V extends Vector> {
    * @param antsTripResultList 此回合所有螞蟻的旅行結果
    * @returns 下一回合的 費洛蒙矩陣
    */
-  private async getNextRoundPheromonMatrix(
+  private getNextRoundPheromonMatrix(
     antsTripResultList: AntTripResult<V>[]
-  ): Promise<number[][]> {
+  ): number[][] {
     // 基本增量
     let nextPheromoneMatrix = this.getPheromoneMatrixWeakening(
       this.optionState.pheromoneWeakeningRate
@@ -435,10 +437,10 @@ export default class AntColonyOptimization<V extends Vector> {
    * @returns this.optionState 初始值
    */
   private getInitOptionState(
-    option: AntColonyOptimizationOption = this.DEFAULT_OPTION_STATE
+    option: AntColonyOptimizationOption = AntColonyOptimization.DEFAULT_OPTION_STATE
   ) {
     return {
-      ...this.DEFAULT_OPTION_STATE,
+      ...AntColonyOptimization.DEFAULT_OPTION_STATE,
       ...option,
     };
   }
@@ -462,7 +464,7 @@ export default class AntColonyOptimization<V extends Vector> {
    * @returns 是否合規
    */
   private checkOptionStateValidity(
-    optionState: AntColonyOptimizationOptionState<V>
+    optionState: AntColonyOptimizationOptionState
   ): boolean {
     if (optionState.maximumRounds <= 0) {
       throw new Error(`optionState.maximumRounds 必須大於 0`);
@@ -475,16 +477,25 @@ export default class AntColonyOptimization<V extends Vector> {
     return true;
   }
 
-  // /**
-  //  * [初始化] 獲取 this.vectorList 初始值
-  //  * @param vectorList 向量類序列
-  //  * @returns this.vectorList 初始值
-  //  */
+  /**
+   * [初始化] 獲取 this.vectorList 初始值
+   * @param vectorList 向量類序列
+   * @returns this.vectorList 初始值
+   */
   private getInitVector3DList(vectorList: V[]): Vector3D[] {
     return vectorList.map((vector) => {
       // @ts-ignore
       const z = vector.z ?? 0;
       return { x: vector.x, y: vector.y, z };
     });
+  }
+
+  /**
+   * 等待一段時間，可以強制讓計算進入宏任務，以防止頁面卡頓
+   * @param ms 微秒 1000 = 1 秒
+   * @returns undefined
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((r) => setTimeout(r, ms));
   }
 }

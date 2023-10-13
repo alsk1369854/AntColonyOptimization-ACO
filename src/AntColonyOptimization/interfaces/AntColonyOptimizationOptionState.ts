@@ -1,7 +1,8 @@
+import { Vector3D } from "@alsk1369854/ant-colony-optimization";
 import AntColonyOptimizationResult from "./AntColonyOptimizationResult";
 import Vector from "./Vector";
 
-export default interface AntColonyOptimizationOptionState<V extends Vector> {
+export default interface AntColonyOptimizationOptionState {
   /**
    * 螞蟻數量
    */
@@ -18,8 +19,8 @@ export default interface AntColonyOptimizationOptionState<V extends Vector> {
    * @returns 是否中斷計算
    */
   onRoundEnds(
-    result: AntColonyOptimizationResult<V>,
-    roundResultHistory: AntColonyOptimizationResult<V>[]
+    result: AntColonyOptimizationResult<Vector3D>,
+    roundResultHistory: AntColonyOptimizationResult<Vector3D>[]
   ): boolean | void;
 
   /**
