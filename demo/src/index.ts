@@ -10,7 +10,10 @@ function getRandomVector(max: number): Vector3D {
 }
 
 // 向量序列
-const vectorList: Vector3D[] = new Array(5).fill(getRandomVector(10));
+let vectorList: Vector3D[] = [];
+for (let i = 0; i < 5; i++) {
+  vectorList.push(getRandomVector(10));
+}
 
 // 蟻群優化算法
 const aco: AntColonyOptimization<Vector3D> = new AntColonyOptimization(
