@@ -1,4 +1,4 @@
-import AntTripResult from "../libs/AntTripResult";
+import AntTripResult from "../modules/AntTripResult";
 import Vector from "./Vector";
 
 export default interface AntColonyOptimizationResult<V extends Vector> {

@@ -1,6 +1,6 @@
 import AntColonyOptimizationOption from "./interfaces/AntColonyOptimizationOption";
 import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimizationOptionState";
-import AntTripResult from "./libs/AntTripResult";
+import AntTripResult from "./modules/AntTripResult";
 import Vector from "./interfaces/Vector";
 import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
 import Vector3D from "./interfaces/Vector3D";

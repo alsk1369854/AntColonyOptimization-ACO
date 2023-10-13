@@ -1,5 +1,5 @@
 export * from "./AntColonyOptimization";
-export * from "./libs/AntTripResult";
+export * from "./modules/AntTripResult";
 export * from "./interfaces/AntColonyOptimizationOption";
 export * from "./interfaces/AntColonyOptimizationResult";
 export * from "./interfaces/Vector";

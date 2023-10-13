@@ -26,8 +26,6 @@
     "watch:compile": "npx babel src --extensions .ts --out-dir dist --source-maps --watch",
     "watch:types": "tsc --project tsconfig.build.json --watch",
     "watch:min": "watchify dist/index.js -o dist/index.min.js -v",
-    "watch:demoTypes": "tsc demo/src/index.ts --outDir demo/dist --watch",
-    "watch:demoMin": "watchify demo/dist/index.js -o demo/dist/index.min.js -v",
     
     "watch": "concurrently npm:watch:*"
   },

@@ -1,6 +1,6 @@
 import AntColonyOptimization from "../../dist/AntColonyOptimization/AntColonyOptimization";
 import Vector2D from "../../dist/AntColonyOptimization/interfaces/Vector2D";
-import CanvasUtil from "../../dist/utils/CanvasUtil";
+import CanvasUtil from "./utils/CanvasUtil";
 
 AntColonyOptimization;
 

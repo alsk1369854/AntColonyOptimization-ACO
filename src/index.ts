@@ -1,2 +1,2 @@
 export * from "./AntColonyOptimization";
-export * from "./utils/CanvasUtil";
+// export * from "./utils/CanvasUtil";
