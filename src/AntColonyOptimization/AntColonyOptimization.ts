@@ -3,6 +3,7 @@ import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimization
 import AntTripResult from "./libs/AntTripResult";
 import Vector from "./interfaces/Vector";
 import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
+import Vector3D from "./interfaces/Vector3D";
 
 export default class AntColonyOptimization<V extends Vector> {
   /**
@@ -22,7 +23,7 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 向量序列
    */
-  private readonly vectorList: V[];
+  private readonly vectorList: Vector3D[];
 
   /**
    * 配置參數
@@ -54,17 +55,21 @@ export default class AntColonyOptimization<V extends Vector> {
    */
   private result: Promise<AntColonyOptimizationResult<V> | undefined>;
 
+  /**
+   * 構造器
+   * @param vectorList 向量序列
+   * @param option 配置參數
+   */
   constructor(vectorList: V[], option?: AntColonyOptimizationOption) {
-    // this.vectorList = this.getInitVector3DList(vectorList);
-    this.vectorList = vectorList;
-    this.checkVectorListValidity(this.vectorList);
+    this.vectorList = this.getInitVector3DList(vectorList);
+    this.checkVectorListValidity(this.vectorList as V[]);
 
     this.optionState = this.getInitOptionState(option);
     this.checkOptionStateValidity(this.optionState);
 
     this.distanceMatrix = this.getInitDistanceMatrix(this.vectorList);
     this.visibilityMatrix = this.getInitVisibilityMatrix(this.distanceMatrix);
-    this.pheromoneMatrix = this.getInitPheromoneMatrix(this.vectorList);
+    this.pheromoneMatrix = this.getInitPheromoneMatrix(this.vectorList as V[]);
 
     this.result = this.start();
   }
@@ -222,7 +227,7 @@ export default class AntColonyOptimization<V extends Vector> {
    */
   private getAntTripResult(antTripIndexList: number[]): AntTripResult<V> {
     return new AntTripResult<V>(
-      this.vectorList,
+      this.vectorList as V[],
       this.distanceMatrix,
       antTripIndexList
     );
@@ -342,10 +347,10 @@ export default class AntColonyOptimization<V extends Vector> {
    * @param vectorList 向量序列
    * @returns 候選向量 Map 物件
    */
-  private getInitCandidateVectorMap(vectorList: V[]): Map<number, V> {
+  private getInitCandidateVectorMap(vectorList: Vector3D[]): Map<number, V> {
     let result: Map<number, V> = new Map();
     this.vectorList.forEach((vector, i) => {
-      result.set(i, vector);
+      result.set(i, vector as V);
     });
 
     return this.getInitCandidateVectorMap(vectorList);
@@ -382,19 +387,13 @@ export default class AntColonyOptimization<V extends Vector> {
    * @param vectorList 向量序列
    * @returns this.distanceMatrix 初始值
    */
-  private getInitDistanceMatrix(vectorList: V[]): number[][] {
-    function getDistance(vectorA: V, vectorB: V): number {
-      let result: number =
-        Math.pow(vectorA.x - vectorB.x, 2) + Math.pow(vectorA.y - vectorB.y, 2);
-
-      // @ts-ignore
-      const aZ: number = vectorA.z ?? 0;
-      // @ts-ignore
-      const bZ: number = vectorB.z ?? 0;
-      result += Math.pow(aZ - bZ, 2);
-
-      result = Math.sqrt(result);
-      return result;
+  private getInitDistanceMatrix(vectorList: Vector3D[]): number[][] {
+    function getDistance(vectorA: Vector3D, vectorB: Vector3D): number {
+      return Math.sqrt(
+        Math.pow(vectorA.x - vectorB.x, 2) +
+          Math.pow(vectorA.y - vectorB.y, 2) +
+          Math.pow(vectorA.z - vectorB.z, 2)
+      );
     }
     return vectorList.map((vectorI, i) => {
       return vectorList.map((vectorJ, j) => {
@@ -454,13 +453,11 @@ export default class AntColonyOptimization<V extends Vector> {
   //  * @param vectorList 向量類序列
   //  * @returns this.vectorList 初始值
   //  */
-  // private getInitVector3DList(vectorList: V[]): V[] {
-  //   return vectorList.map((vector) => {
-  //     const vector3D = vector as V;
-  //     if (vector3D.z === undefined) {
-  //       vector3D.z = 0;
-  //     }
-  //     return { x: vector3D.x, y: vector3D.y, z: vector3D.z };
-  //   });
-  // }
+  private getInitVector3DList(vectorList: V[]): Vector3D[] {
+    return vectorList.map((vector) => {
+      // @ts-ignore
+      const z = vector.z ?? 0;
+      return { x: vector.x, y: vector.y, z };
+    });
+  }
 }
