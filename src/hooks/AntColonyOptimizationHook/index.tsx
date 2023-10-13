@@ -35,7 +35,7 @@ export default function AntColonyOptimizationHook(): [
     const option: AntColonyOptimizationOption = {
       maximumRounds,
       onRoundEnds: (result, history) => {
-        setRoundCount(result.roundCount);
+        setRoundCount(result.roundCount + 1);
         setResult(result);
       },
     };

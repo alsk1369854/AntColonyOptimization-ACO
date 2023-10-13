@@ -23,7 +23,7 @@ export default function Example() {
     <>
       <div style={{ display: "flex", padding: 10 }}>
         <div style={{ display: "flex", alignItems: "center", padding: 10 }}>
-          <span>隨機向量數量：</span>
+          <span>隨機向量個數：</span>
           <input
             type="number"
             value={vectorAmount}
@@ -33,7 +33,7 @@ export default function Example() {
           />
         </div>
         <div style={{ display: "flex", alignItems: "center", padding: 10 }}>
-          <span>最大迭代回合：</span>
+          <span>迭代回合：</span>
           <input
             type="number"
             value={maximumRounds}
