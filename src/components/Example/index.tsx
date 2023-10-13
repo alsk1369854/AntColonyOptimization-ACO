@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Html,
   Line,
   OrbitControls,
   PerspectiveCamera,
@@ -15,7 +14,8 @@ export default function Example() {
   const pointColor: string = "#354aa6";
   const lineColor: string = "#778ffc";
 
-  const [acoResult, acoIsRuning, acoCalculate] = AntColonyOptimizationHook();
+  const [acoResult, acoIsRuning, acoRoundCount, acoCalculate] =
+    AntColonyOptimizationHook();
   const [vectorAmount, setVectorAmount] = useState<number>(10);
   const [maximumRounds, setMaximumRounds] = useState<number>(50);
 
@@ -33,7 +33,7 @@ export default function Example() {
           />
         </div>
         <div style={{ display: "flex", alignItems: "center", padding: 10 }}>
-          <span>最大迭代回合:</span>
+          <span>最大迭代回合：</span>
           <input
             type="number"
             value={maximumRounds}
@@ -47,10 +47,13 @@ export default function Example() {
           <div style={{ color: acoIsRuning ? "red" : "green" }}>
             {acoIsRuning ? "計算中" : "計算完成"}
           </div>
-          <button onClick={() => acoCalculate(vectorAmount, maximumRounds)}>
-            開始計算
-          </button>
+          <div>
+            {acoRoundCount}/{maximumRounds}
+          </div>
         </div>
+        <button onClick={() => acoCalculate(vectorAmount, maximumRounds)}>
+          開始計算
+        </button>
       </div>
       <Canvas style={{ height: "100vh", width: "100vw" }}>
         <OrbitControls

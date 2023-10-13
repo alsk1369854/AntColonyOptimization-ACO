@@ -1,19 +1,20 @@
+import React, { useState, useEffect } from "react";
 import {
   AntColonyOptimization,
   AntColonyOptimizationOption,
   AntColonyOptimizationResult,
   Vector3D,
 } from "@alsk1369854/ant-colony-optimization";
-import React, { useState } from "react";
-import { setTimeout } from "timers/promises";
 
 export default function AntColonyOptimizationHook(): [
   AntColonyOptimizationResult<Vector3D> | undefined,
   boolean,
+  number,
   (vectorAmount?: number, maximumRounds?: number) => void
 ] {
   const [result, setResult] = useState<AntColonyOptimizationResult<Vector3D>>();
   const [isRuning, setIsRouning] = useState<boolean>(false);
+  const [roundCount, setRoundCount] = useState<number>(0);
 
   function getRandomVector(max: number): Vector3D {
     return {
@@ -33,19 +34,22 @@ export default function AntColonyOptimizationHook(): [
     }
     const option: AntColonyOptimizationOption = {
       maximumRounds,
-      onRoundEnds: (result: any, history: any) => {
-        const temp = result as AntColonyOptimizationResult<Vector3D>;
-        setResult(temp);
+      onRoundEnds: (result, history) => {
+        setRoundCount(result.roundCount);
+        setResult(result);
       },
     };
 
-    window.setTimeout(() => {
-      const aco = new AntColonyOptimization<Vector3D>(vectorList, option);
-      aco.getResult().then(() => {
-        setIsRouning(false);
-      });
-    }, 0);
+    const aco = new AntColonyOptimization<Vector3D>(vectorList, option);
+    aco.getResult().then(() => {
+      setIsRouning(false);
+    });
   }
 
-  return [result, isRuning, calculate];
+  useEffect(() => {
+    // Some initialization logic here
+    calculate();
+  }, []);
+
+  return [result, isRuning, roundCount, calculate];
 }
