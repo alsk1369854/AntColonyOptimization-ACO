@@ -56,6 +56,7 @@ export default function Example() {
         <OrbitControls
           target={[0, 0.35, 0]}
           maxPolarAngle={1.45}
+          position={[250, 150, 30]}
         ></OrbitControls>
         <PerspectiveCamera
           makeDefault

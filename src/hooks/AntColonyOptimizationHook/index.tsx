@@ -5,6 +5,7 @@ import {
   Vector3D,
 } from "@alsk1369854/ant-colony-optimization";
 import React, { useState } from "react";
+import { setTimeout } from "timers/promises";
 
 export default function AntColonyOptimizationHook(): [
   AntColonyOptimizationResult<Vector3D> | undefined,
@@ -32,19 +33,18 @@ export default function AntColonyOptimizationHook(): [
     }
     const option: AntColonyOptimizationOption = {
       maximumRounds,
-      onRoundEnds: (result) => {
+      onRoundEnds: (result: any, history: any) => {
         const temp = result as AntColonyOptimizationResult<Vector3D>;
         setResult(temp);
       },
     };
 
-    new Promise((resolve) => {
+    window.setTimeout(() => {
       const aco = new AntColonyOptimization<Vector3D>(vectorList, option);
       aco.getResult().then(() => {
         setIsRouning(false);
       });
-      resolve(undefined);
-    });
+    }, 0);
   }
 
   return [result, isRuning, calculate];
