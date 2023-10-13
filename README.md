@@ -2,12 +2,22 @@
 
 - <a target='_blank' href='https://alsk1369854.github.io/AntColonyOptimization-ACO'>Demo</a>
 
+### Install
+
+```bash
+npm install ant_colony_optimization
+```
+
 ### Example
 
 #### index.ts
 
 ```ts
-import { AntColonyOptimization, Vector3D, Vector2D } from "../../dist";
+import {
+  AntColonyOptimization,
+  Vector3D,
+  Vector2D,
+} from "ant-colony-optimization";
 
 function getRandomVector(max: number): Vector3D {
   return {

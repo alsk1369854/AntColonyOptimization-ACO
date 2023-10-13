@@ -1,11 +1,12 @@
 {
-  "name": "ant-colony-optimization",
-  "version": "1.0.0",
-  "description": "Ant Colony Optimization",
+  "name": "@alsk1369854/ant-colony-optimization",
+  "version": "2.0.1",
+  "description": "Ant colony optimization algorithm",
   "keywords": [
     "ACO",
     "Ant Colony Optimization",
-    "Machine learning"
+    "Machine learning",
+    "Algorithm"
   ],
   "main": "dist/index.js",
   "type": "dist/index.d.ts",
