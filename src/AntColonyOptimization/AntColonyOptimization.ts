@@ -9,10 +9,13 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 預設配置參數
    */
-  static readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState = {
+  private readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState<V> = {
     antAmount: 30,
     maximumRounds: 200,
-    onRoundEnds: (_: AntColonyOptimizationResult<Vector>) => {},
+    onRoundEnds: (
+      result: AntColonyOptimizationResult<V>,
+      roundResultHistory: AntColonyOptimizationResult<V>[]
+    ): boolean | void => {},
     initialPheromone: 1,
     pheromoneIncrement: 1,
     pheromoneWeakeningRate: 0.1,
@@ -28,7 +31,7 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 配置參數
    */
-  private readonly optionState: AntColonyOptimizationOptionState;
+  private readonly optionState: AntColonyOptimizationOptionState<V>;
 
   /**
    * 距離矩陣
@@ -71,7 +74,10 @@ export default class AntColonyOptimization<V extends Vector> {
     this.visibilityMatrix = this.getInitVisibilityMatrix(this.distanceMatrix);
     this.pheromoneMatrix = this.getInitPheromoneMatrix(this.vectorList as V[]);
 
-    this.result = this.start();
+    this.result = this.start(
+      this.optionState.maximumRounds,
+      this.optionState.antAmount
+    );
   }
 
   /**
@@ -96,7 +102,10 @@ export default class AntColonyOptimization<V extends Vector> {
    * 開始計算螞蟻演算法
    * @returns 螞蟻演算法計算結果
    */
-  private async start(): Promise<AntColonyOptimizationResult<V> | undefined> {
+  private async start(
+    maximumRounds: number,
+    antAmount: number
+  ): Promise<AntColonyOptimizationResult<V> | undefined> {
     let result: AntColonyOptimizationResult<V> | undefined = undefined;
 
     /**
@@ -105,48 +114,17 @@ export default class AntColonyOptimization<V extends Vector> {
     let bestAntTripResult: AntTripResult<V> | undefined = undefined;
 
     // 每回合
-    for (
-      let roundCount = 0;
-      roundCount < this.optionState.maximumRounds;
-      roundCount++
-    ) {
-      // 每隻螞蟻
-      // 所有螞蟻的旅途(經過向量的 Index)結果
-      let antsTripIndexList: number[][] = [];
-      let currentAntTripIndexList: number[] = [];
-      for (
-        let antCount = 0;
-        antCount < this.optionState.antAmount;
-        antCount++
-      ) {
-        // 螞蟻起始準備
-        let candidateVectorMap: Map<number, V> = this.getInitCandidateVectorMap(
-          this.vectorList
-        );
-        let currentVectorIndex: number = this.pickRandomKey(candidateVectorMap);
-        currentAntTripIndexList = [currentVectorIndex];
+    for (let roundCount = 0; roundCount < maximumRounds; roundCount++) {
+      // 本回合所有螞蟻的旅行結果
+      const antsTripIndexList: number[][] = await this.roundStart(antAmount);
 
-        // 走遍所有候選向量
-        while (candidateVectorMap.size !== 0) {
-          currentVectorIndex = this.pickKeyByRouletteWheel(
-            currentVectorIndex,
-            candidateVectorMap
-          );
-          currentAntTripIndexList.push(currentVectorIndex);
-        }
-
-        // 回到起點，行程一個環
-        currentAntTripIndexList.push(currentAntTripIndexList[0]);
-
-        // 添加至本回合解果集
-        antsTripIndexList.push(currentAntTripIndexList);
-      }
       // 更新費洛蒙舉矩陣
       const antsTripResultList: AntTripResult<V>[] = antsTripIndexList.map(
         (antTripIndexList) => this.getAntTripResult(antTripIndexList)
       );
-      this.pheromoneMatrix =
-        this.getNextRoundPheromonMatrix(antsTripResultList);
+      this.pheromoneMatrix = await this.getNextRoundPheromonMatrix(
+        antsTripResultList
+      );
 
       // 更新歷史最佳解果
       const roundBestAntTripResult: AntTripResult<V> =
@@ -176,6 +154,55 @@ export default class AntColonyOptimization<V extends Vector> {
   }
 
   /**
+   * 回合開始，陸續送螞蟻走完旅程
+   * @param antAmount 螞蟻數量
+   * @returns 本回合所有螞蟻的旅行結果
+   */
+  private async roundStart(antAmount: number): Promise<number[][]> {
+    // 所有螞蟻的旅途(經過向量的 Index)結果集合
+    let antsTripIndexList: number[][] = [];
+
+    // 每一隻螞蟻
+    for (let antCount = 0; antCount < antAmount; antCount++) {
+      // 本隻螞蟻旅行路徑
+      const antTripIndexList: number[] = await this.antTripStart(
+        this.vectorList
+      );
+
+      // 添加至本回合結果集
+      antsTripIndexList.push(antTripIndexList);
+    }
+    return antsTripIndexList;
+  }
+
+  /**
+   * 送一隻螞蟻出去走一趟旅程
+   * @returns 此之螞蟻依序走訪的向量 index 序列
+   */
+  private async antTripStart(vectoryList: Vector3D[]): Promise<number[]> {
+    let antTripIndexList: number[] = [];
+
+    // 螞蟻起始準備
+    let candidateVectorMap: Map<number, V> =
+      this.getInitCandidateVectorMap(vectoryList);
+    let currentVectorIndex: number = this.pickRandomKey(candidateVectorMap);
+    antTripIndexList = [currentVectorIndex];
+
+    // 走遍所有候選向量
+    while (candidateVectorMap.size !== 0) {
+      currentVectorIndex = this.pickKeyByRouletteWheel(
+        currentVectorIndex,
+        candidateVectorMap
+      );
+      antTripIndexList.push(currentVectorIndex);
+    }
+
+    // 回到起點，行程一個環
+    antTripIndexList.push(antTripIndexList[0]);
+    return antTripIndexList;
+  }
+
+  /**
    * 獲取回合結果集中的最佳結果
    * @param antsTripResultList 回合結果集
    * @returns 最佳結果
@@ -196,9 +223,9 @@ export default class AntColonyOptimization<V extends Vector> {
    * @param antsTripResultList 此回合所有螞蟻的旅行結果
    * @returns 下一回合的 費洛蒙矩陣
    */
-  private getNextRoundPheromonMatrix(
+  private async getNextRoundPheromonMatrix(
     antsTripResultList: AntTripResult<V>[]
-  ): number[][] {
+  ): Promise<number[][]> {
     // 基本增量
     let nextPheromoneMatrix = this.getPheromoneMatrixWeakening(
       this.optionState.pheromoneWeakeningRate
@@ -408,10 +435,10 @@ export default class AntColonyOptimization<V extends Vector> {
    * @returns this.optionState 初始值
    */
   private getInitOptionState(
-    option: AntColonyOptimizationOption = AntColonyOptimization.DEFAULT_OPTION_STATE
+    option: AntColonyOptimizationOption = this.DEFAULT_OPTION_STATE
   ) {
     return {
-      ...AntColonyOptimization.DEFAULT_OPTION_STATE,
+      ...this.DEFAULT_OPTION_STATE,
       ...option,
     };
   }
@@ -435,7 +462,7 @@ export default class AntColonyOptimization<V extends Vector> {
    * @returns 是否合規
    */
   private checkOptionStateValidity(
-    optionState: AntColonyOptimizationOptionState
+    optionState: AntColonyOptimizationOptionState<V>
   ): boolean {
     if (optionState.maximumRounds <= 0) {
       throw new Error(`optionState.maximumRounds 必須大於 0`);

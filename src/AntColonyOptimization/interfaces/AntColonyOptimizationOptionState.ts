@@ -1,7 +1,7 @@
 import AntColonyOptimizationResult from "./AntColonyOptimizationResult";
 import Vector from "./Vector";
 
-export default interface AntColonyOptimizationOptionState {
+export default interface AntColonyOptimizationOptionState<V extends Vector> {
   /**
    * 螞蟻數量
    */
@@ -17,7 +17,7 @@ export default interface AntColonyOptimizationOptionState {
    * @param result 當前回合的計算結果
    * @returns 是否中斷計算
    */
-  onRoundEnds<V extends Vector>(
+  onRoundEnds(
     result: AntColonyOptimizationResult<V>,
     roundResultHistory: AntColonyOptimizationResult<V>[]
   ): boolean | void;
