@@ -13,10 +13,7 @@ export default class AntColonyOptimization<V extends Vector> {
     {
       antAmount: 30,
       maximumRounds: 200,
-      onRoundEnds: (
-        result: AntColonyOptimizationResult<Vector3D>,
-        roundResultHistory: AntColonyOptimizationResult<Vector3D>[]
-      ): boolean | void => {},
+      onRoundEnds: () => {},
       initialPheromone: 1,
       pheromoneIncrement: 1,
       pheromoneWeakeningRate: 0.1,
@@ -66,18 +63,25 @@ export default class AntColonyOptimization<V extends Vector> {
    */
   constructor(vectorList: V[], option?: AntColonyOptimizationOption) {
     this.vectorList = this.getInitVector3DList(vectorList);
-    this.checkVectorListValidity(this.vectorList as V[]);
+    this.checkVectorListValidity(this.vectorList);
 
     this.optionState = this.getInitOptionState(option);
     this.checkOptionStateValidity(this.optionState);
 
     this.distanceMatrix = this.getInitDistanceMatrix(this.vectorList);
     this.visibilityMatrix = this.getInitVisibilityMatrix(this.distanceMatrix);
-    this.pheromoneMatrix = this.getInitPheromoneMatrix(this.vectorList as V[]);
+    this.pheromoneMatrix = this.getInitPheromoneMatrix(
+      this.vectorList,
+      this.optionState.initialPheromone
+    );
 
     this.result = this.start(
       this.optionState.maximumRounds,
-      this.optionState.antAmount
+      this.optionState.antAmount,
+      this.optionState.pheromoneWeight,
+      this.optionState.pheromoneWeakeningRate,
+      this.optionState.pheromoneIncrement,
+      this.optionState.onRoundEnds
     );
   }
 
@@ -90,8 +94,8 @@ export default class AntColonyOptimization<V extends Vector> {
   }
 
   /**
-   * 獲得 當前進度的回合歷史結果
-   * @returns 當前進度的回合歷史結果
+   * 獲得 當前進度的歷史回合結果
+   * @returns 當前進度的歷史回合結果
    */
   public getRoundResultHistory(): AntColonyOptimizationResult<V>[] {
     return this.roundResultHistory;
@@ -99,14 +103,23 @@ export default class AntColonyOptimization<V extends Vector> {
 
   /**
    * 開始計算螞蟻演算法
+   * @param maximumRounds 最大迭代回合
+   * @param antAmount 螞蟻數量
+   * @param pheromoneWeight 費洛蒙權重
+   * @param pheromoneWeakeningRate 費洛蒙衰退率 (0~1)
+   * @param pheromoneIncrement 每隻螞蟻經過路徑費洛蒙增量 (增量 / 螞蟻行走距離)
+   * @param onRoundEnds [回調] 回合結束時
    * @returns 螞蟻演算法計算結果
    */
   private async start(
     maximumRounds: number,
-    antAmount: number
+    antAmount: number,
+    pheromoneWeight: number,
+    pheromoneWeakeningRate: number,
+    pheromoneIncrement: number,
+    onRoundEnds: AntColonyOptimizationOptionState["onRoundEnds"] = () => {}
   ): Promise<AntColonyOptimizationResult<V>> {
     let result: AntColonyOptimizationResult<V> | undefined = undefined;
-
     /**
      * 最佳的螞蟻旅行結果
      */
@@ -115,14 +128,20 @@ export default class AntColonyOptimization<V extends Vector> {
     // 每回合
     for (let roundCount = 0; roundCount < maximumRounds; roundCount++) {
       // 本回合所有螞蟻的旅行結果
-      const antsTripIndexList: number[][] = this.roundStart(antAmount);
+      const antsTripIndexList: number[][] = this.roundStart(
+        antAmount,
+        pheromoneWeight
+      );
 
       // 更新費洛蒙舉矩陣
       const antsTripResultList: AntTripResult<V>[] = antsTripIndexList.map(
         (antTripIndexList) => this.getAntTripResult(antTripIndexList)
       );
-      this.pheromoneMatrix =
-        this.getNextRoundPheromonMatrix(antsTripResultList);
+      this.pheromoneMatrix = this.getNextRoundPheromonMatrix(
+        antsTripResultList,
+        pheromoneWeakeningRate,
+        pheromoneIncrement
+      );
 
       // 更新歷史最佳解果
       const roundBestAntTripResult: AntTripResult<V> =
@@ -145,7 +164,7 @@ export default class AntColonyOptimization<V extends Vector> {
       this.roundResultHistory.push(result);
 
       // 執行回合結束回調
-      this.optionState.onRoundEnds(
+      onRoundEnds(
         result as AntColonyOptimizationResult<Vector3D>,
         this.roundResultHistory as AntColonyOptimizationResult<Vector3D>[]
       );
@@ -160,16 +179,20 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 回合開始，陸續送螞蟻走完旅程
    * @param antAmount 螞蟻數量
+   * @param pheromoneWeight 費洛蒙權重
    * @returns 本回合所有螞蟻的旅行結果
    */
-  private roundStart(antAmount: number): number[][] {
+  private roundStart(antAmount: number, pheromoneWeight: number): number[][] {
     // 所有螞蟻的旅途(經過向量的 Index)結果集合
     let antsTripIndexList: number[][] = [];
 
     // 每一隻螞蟻
     for (let antCount = 0; antCount < antAmount; antCount++) {
       // 本隻螞蟻旅行路徑
-      const antTripIndexList: number[] = this.antTripStart(this.vectorList);
+      const antTripIndexList: number[] = this.antTripStart(
+        this.vectorList,
+        pheromoneWeight
+      );
 
       // 添加至本回合結果集
       antsTripIndexList.push(antTripIndexList);
@@ -179,11 +202,15 @@ export default class AntColonyOptimization<V extends Vector> {
 
   /**
    * 送一隻螞蟻出去走一趟旅程
+   * @param vectoryList 旅程座標向量序列
+   * @param pheromoneWeight 費洛蒙權重
    * @returns 此之螞蟻依序走訪的向量 index 序列
    */
-  private antTripStart(vectoryList: Vector3D[]): number[] {
+  private antTripStart(
+    vectoryList: Vector3D[],
+    pheromoneWeight: number
+  ): number[] {
     let antTripIndexList: number[] = [];
-
     // 螞蟻起始準備
     let candidateVectorMap: Map<number, V> =
       this.getInitCandidateVectorMap(vectoryList);
@@ -194,7 +221,8 @@ export default class AntColonyOptimization<V extends Vector> {
     while (candidateVectorMap.size !== 0) {
       currentVectorIndex = this.pickKeyByRouletteWheel(
         currentVectorIndex,
-        candidateVectorMap
+        candidateVectorMap,
+        pheromoneWeight
       );
       antTripIndexList.push(currentVectorIndex);
     }
@@ -223,20 +251,24 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 獲取 下一回合的 費洛蒙矩陣
    * @param antsTripResultList 此回合所有螞蟻的旅行結果
+   * @param pheromoneWeakeningRate 費洛蒙衰退率 (0~1)
+   * @param pheromoneIncrement 每隻螞蟻經過路徑費洛蒙增量 (增量 / 螞蟻行走距離)
    * @returns 下一回合的 費洛蒙矩陣
    */
   private getNextRoundPheromonMatrix(
-    antsTripResultList: AntTripResult<V>[]
+    antsTripResultList: AntTripResult<V>[],
+    pheromoneWeakeningRate: number,
+    pheromoneIncrement: number
   ): number[][] {
     // 基本增量
     let nextPheromoneMatrix = this.getPheromoneMatrixWeakening(
-      this.optionState.pheromoneWeakeningRate
+      pheromoneWeakeningRate
     );
 
     // 旅程路線增量
     antsTripResultList.forEach((antTripResult) => {
       const pheromoneIncrease: number =
-        this.optionState.pheromoneIncrement / antTripResult.distance;
+        pheromoneIncrement / antTripResult.distance;
 
       let prevVectorIndex: number = -1;
       antTripResult.tripIndexList.forEach((currVectorIndex) => {
@@ -280,17 +312,20 @@ export default class AntColonyOptimization<V extends Vector> {
    * 挑起 下一個前往的向量，使用隨機輪盤法
    * @param currentVectorIndex 當前所在的 向量 index
    * @param candidateVectorMap 候選的向量 Map (key 將會被挑起)
+   * @param pheromoneWeight 費洛蒙權重
    * @returns 下個前往的向量 Key ; index
    */
   private pickKeyByRouletteWheel(
     currentVectorIndex: number,
-    candidateVectorMap: Map<number, V>
+    candidateVectorMap: Map<number, V>,
+    pheromoneWeight: number
   ): number {
     // 機算前往每個候選向量的機率
     const candidateVectorProbabilityMap: Map<number, number> =
       this.getInitCandidateVectorProbabilityMap(
         currentVectorIndex,
-        candidateVectorMap
+        candidateVectorMap,
+        pheromoneWeight
       );
 
     // 隨機伐值
@@ -317,11 +352,13 @@ export default class AntColonyOptimization<V extends Vector> {
    * [初始化] 獲取 所有候選向量前往機率(0~1) Map
    * @param currentVectorIndex 當前所在的 向量 index
    * @param candidateVectorMap 候選的向量 Map
+   * @param pheromoneWeight 費洛蒙權重
    * @returns 所有候選向量前往機率(0~1) Map
    */
   private getInitCandidateVectorProbabilityMap(
     currentVectorIndex: number,
-    candidateVectorMap: Map<number, V>
+    candidateVectorMap: Map<number, V>,
+    pheromoneWeight: number
   ): Map<number, number> {
     let result: Map<number, number> = new Map();
 
@@ -332,11 +369,11 @@ export default class AntColonyOptimization<V extends Vector> {
     candidateVectorMap.forEach((_, index) => {
       const pheromoneValue: number = Math.pow(
         this.pheromoneMatrix[currentVectorIndex][index],
-        this.optionState.pheromoneWeight
+        pheromoneWeight
       );
       const visibilityValue: number = Math.pow(
         this.visibilityMatrix[currentVectorIndex][index],
-        this.optionState.distanceWeight
+        pheromoneWeight
       );
       const probability: number = pheromoneValue * visibilityValue;
       probabilitySum += probability;
@@ -388,12 +425,16 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * [初始化] 獲取 this.pheromoneMatrix 初始值
    * @param vectorList 向量序列
+   * @param initialPheromone 初始費洛蒙
    * @returns this.pheromoneMatrix 初始值
    */
-  private getInitPheromoneMatrix(vectorList: V[]): number[][] {
+  private getInitPheromoneMatrix(
+    vectorList: Vector3D[],
+    initialPheromone: number
+  ): number[][] {
     return vectorList.map(() => {
       return vectorList.map(() => {
-        return this.optionState.initialPheromone;
+        return initialPheromone;
       });
     });
   }
@@ -447,10 +488,10 @@ export default class AntColonyOptimization<V extends Vector> {
 
   /**
    * [驗證] 檢查 vectorList 是否合規
-   * @param vectorList Vectory[] 物件
+   * @param vectorList Vector3D[] 物件
    * @returns 是否合規
    */
-  private checkVectorListValidity(vectorList: V[]): boolean {
+  private checkVectorListValidity(vectorList: Vector3D[]): boolean {
     if (vectorList.length === 0) {
       throw new Error(`vectorList 不可為空陣列`);
     }
