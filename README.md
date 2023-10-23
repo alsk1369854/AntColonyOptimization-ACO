@@ -20,14 +20,6 @@ Using yarn:
 yarn add @alsk1369854/ant-colony-optimization
 ```
 
-### CDN
-
-Using unpkg CDN:
-
-```html
-<script src="https://unpkg.com/@alsk1369854/ant-colony-optimization/dist/index.min.js"></script>
-```
-
 ## Example
 
 - <a target='_blank' href='https://alsk1369854.github.io/AntColonyOptimization-ACO'>DEMO</a>

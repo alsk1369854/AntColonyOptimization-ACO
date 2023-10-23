@@ -1,6 +1,6 @@
 {
   "name": "@alsk1369854/ant-colony-optimization",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Ant colony optimization algorithm",
   "keywords": [
     "ACO",
@@ -22,7 +22,6 @@
     "build:removeDist": "rmdir /s /q dist",
     "build:compile": "npx babel src --extensions .ts --out-dir dist --source-maps",
     "build:types": "tsc --project tsconfig.build.json && browserify dist/index.js -o dist/index.min.js",
-    "build:demo": "tsc demo/src/index.ts --outDir demo/dist && browserify demo/dist/index.js -o demo/dist/index.min.js",
     "build": "concurrently npm:build:*",
     "watch:compile": "npx babel src --extensions .ts --out-dir dist --source-maps --watch",
     "watch:types": "tsc --project tsconfig.build.json --watch",
