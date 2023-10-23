@@ -8,23 +8,16 @@ import {
   Vector3D,
 } from "@alsk1369854/ant-colony-optimization";
 
-// type UseAntColonyOptimization = {
-//   result: AntColonyOptimizationResult<Vector3D> | undefined;
-//   isRuning: boolean;
-//   calculate: (
-//     vectorList: Vector[],
-//     option?: AntColonyOptimizationOption
-//   ) => void;
-// };
-
-export function useAntColonyOptimization(): {
+export interface UseAntColonyOptimizationReturn {
   roundResult: AntColonyOptimizationRoundResult<Vector3D> | undefined;
   isRuning: boolean;
   calculate: (
     vectorList: Vector[],
     option?: AntColonyOptimizationOption
   ) => void;
-} {
+}
+
+export function useAntColonyOptimization(): UseAntColonyOptimizationReturn {
   const [roundResult, setRoundResult] =
     useState<AntColonyOptimizationRoundResult<Vector3D>>();
   const [isRuning, setIsRuning] = useState<boolean>(false);

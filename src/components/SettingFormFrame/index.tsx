@@ -3,19 +3,16 @@ import { Button, Checkbox, Form, Input, InputNumber, Space } from "antd";
 import {
   AntColonyOptimization,
   AntColonyOptimizationOption,
-  Vector,
   Vector3D,
 } from "@alsk1369854/ant-colony-optimization";
+import { UseAntColonyOptimizationReturn } from "../../hooks/useAntColonyOptimization";
 
 interface ISettingFormValue extends AntColonyOptimizationOption {
   randomVectorAmount: number;
 }
 
 export interface ISettingFormFrameProps {
-  calculate: (
-    vectorList: Vector[],
-    option?: AntColonyOptimizationOption
-  ) => void;
+  calculate: UseAntColonyOptimizationReturn["calculate"];
 }
 
 export default function SettingFormFrame({

@@ -4,13 +4,14 @@ import {
   AntColonyOptimizationResult,
   Vector3D,
 } from "@alsk1369854/ant-colony-optimization";
+import { UseAntColonyOptimizationReturn } from "../../hooks/useAntColonyOptimization";
 
 export interface IResultDisplayFrameProps {
-  result: AntColonyOptimizationResult<Vector3D> | undefined;
+  roundResult: UseAntColonyOptimizationReturn["roundResult"];
 }
 
 export default function ResultDisplayFrame({
-  result,
+  roundResult,
 }: IResultDisplayFrameProps) {
-  return <Example result={result}></Example>;
+  return <Example result={roundResult}></Example>;
 }

@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://alsk1369854.github.io/AntColonyOptimization-ACO",
   "dependencies": {
-    "@alsk1369854/ant-colony-optimization": "^2.2.1",
+    "@alsk1369854/ant-colony-optimization": "^2.2.3",
     "@react-three/drei": "^9.88.2",
     "@react-three/fiber": "^8.14.5",
     "@testing-library/jest-dom": "^5.17.0",
