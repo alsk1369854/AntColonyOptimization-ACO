@@ -1,6 +1,6 @@
 {
   "name": "@alsk1369854/ant-colony-optimization",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Ant colony optimization algorithm",
   "keywords": [
     "ACO",

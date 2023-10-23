@@ -10,7 +10,7 @@ export default class AntColonyOptimization<V extends Vector> {
   /**
    * 預設配置參數
    */
-  private static readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState =
+  public static readonly DEFAULT_OPTION_STATE: AntColonyOptimizationOptionState =
     {
       antAmount: 30,
       maximumRounds: 200,
