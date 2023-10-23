@@ -67,7 +67,7 @@ export default function Example() {
         ></PerspectiveCamera>
 
         {acoResult ? (
-          acoResult.bestAntTripResult.tripVectorList.map(
+          acoResult.historyBestTripResult.tripVectorList.map(
             ({ x, y, z }, index) => {
               return (
                 <Sphere
@@ -85,7 +85,7 @@ export default function Example() {
 
         {acoResult ? (
           <Line
-            points={acoResult.bestAntTripResult.tripVectorList.map(
+            points={acoResult.historyBestTripResult.tripVectorList.map(
               ({ x, y, z }) => [x, y, z]
             )}
             color={lineColor}
