@@ -1,14 +1,13 @@
 import React, { Suspense } from "react";
-import "./App.css";
-import Example from "./components/Example";
-import { Canvas } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
+import MainPage from "./pages/MainPage";
 
 function App() {
   return (
-    <Suspense fallback={true}>
-      <Example></Example>
-    </Suspense>
+    <div>
+      <Suspense fallback={true}>
+        <MainPage></MainPage>
+      </Suspense>
+    </div>
   );
 }
 
