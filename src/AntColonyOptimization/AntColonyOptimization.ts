@@ -1,10 +1,10 @@
 import AntColonyOptimizationOption from "./interfaces/AntColonyOptimizationOption";
 import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimizationOptionState";
+import AntColonyOptimizationRoundResult from "./interfaces/AntColonyOptimizationRoundResult";
+import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
 import TripResult from "./modules/TripResult";
 import Vector from "./interfaces/Vector";
-import AntColonyOptimizationRoundResult from "./interfaces/AntColonyOptimizationRoundResult";
 import Vector3D from "./interfaces/Vector3D";
-import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
 
 export default class AntColonyOptimization<V extends Vector> {
   /**
@@ -157,7 +157,7 @@ export default class AntColonyOptimization<V extends Vector> {
       // 更新結果
       roundResultHistory.push(currentRoundResult);
       result = {
-        result: roundResultHistory[roundCount],
+        lastRound: roundResultHistory[roundCount],
         history: roundResultHistory,
       };
 

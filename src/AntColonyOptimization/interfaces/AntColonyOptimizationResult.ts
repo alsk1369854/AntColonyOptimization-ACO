@@ -2,6 +2,6 @@ import AntColonyOptimizationRoundResult from "./AntColonyOptimizationRoundResult
 import Vector from "./Vector";
 
 export default interface AntColonyOptimizationResult<T extends Vector> {
-  result: AntColonyOptimizationRoundResult<T>;
+  lastRound: AntColonyOptimizationRoundResult<T>;
   history: AntColonyOptimizationRoundResult<T>[];
 }

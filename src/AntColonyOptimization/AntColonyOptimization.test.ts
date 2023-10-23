@@ -1,7 +1,5 @@
 import AntColonyOptimization from "./AntColonyOptimization";
 import AntColonyOptimizationOption from "./interfaces/AntColonyOptimizationOption";
-import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimizationOptionState";
-import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationRoundResult";
 import Vector3D from "./interfaces/Vector3D";
 
 function getRandomVectorList(

@@ -87,17 +87,17 @@ aco.getResult().then((result) => console.log(result));
 
 ### Setting options
 
-| Values                                                                                                                                      | Description                                           |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| antAmount: number                                                                                                                           | 螞蟻數量                                              |
-| maximumRounds: number                                                                                                                       | 最大迭代回合                                          |
-| maximumRounds: number                                                                                                                       | 最大迭代回合                                          |
-| initialPheromone: number                                                                                                                    | 初始費洛蒙                                            |
-| pheromoneIncrement: number                                                                                                                  | 每隻螞蟻經過路徑費洛蒙增量 (增量 / 螞蟻行走距離)      |
-| pheromoneWeakeningRate: number                                                                                                              | 每次迭代的費洛蒙衰退率 0 ~ 1 (上一次 \* (1 - 衰退率)) |
-| pheromoneWeight: number                                                                                                                     | 費洛蒙權重                                            |
-| distanceWeight: number                                                                                                                      | 距離權重 (建議: 距離權重 > 費洛蒙權重)                |
-| onRoundEnds: (result: AntColonyOptimizationResult<Vector3D>,roundResultHistory: AntColonyOptimizationResult<Vector3D>[]) => boolean \| void | [回調] 回每合結束時                                   |
+| Values                                                               | Description                                           |
+| -------------------------------------------------------------------- | ----------------------------------------------------- |
+| antAmount: number                                                    | 螞蟻數量                                              |
+| maximumRounds: number                                                | 最大迭代回合                                          |
+| maximumRounds: number                                                | 最大迭代回合                                          |
+| initialPheromone: number                                             | 初始費洛蒙                                            |
+| pheromoneIncrement: number                                           | 每隻螞蟻經過路徑費洛蒙增量 (增量 / 螞蟻行走距離)      |
+| pheromoneWeakeningRate: number                                       | 每次迭代的費洛蒙衰退率 0 ~ 1 (上一次 \* (1 - 衰退率)) |
+| pheromoneWeight: number                                              | 費洛蒙權重                                            |
+| distanceWeight: number                                               | 距離權重 (建議: 距離權重 > 費洛蒙權重)                |
+| onRoundEnds: (result: AntColonyOptimizationResult<Vector3D>) => void | [回調] 回每合結束時                                   |
 
 ## License
 
