@@ -3,8 +3,9 @@ import Example from "../Example";
 import {
   AntColonyOptimizationResult,
   Vector3D,
-} from "@alsk1369854/ant-colony-optimization";
+} from "ant-colony-optimization-algorithm";
 import { UseAntColonyOptimizationReturn } from "../../hooks/useAntColonyOptimization";
+import { Progress } from "antd";
 
 export interface IResultDisplayFrameProps {
   roundResult: UseAntColonyOptimizationReturn["roundResult"];
@@ -13,5 +14,9 @@ export interface IResultDisplayFrameProps {
 export default function ResultDisplayFrame({
   roundResult,
 }: IResultDisplayFrameProps) {
-  return <Example result={roundResult}></Example>;
+  return (
+    <div style={{ width: "100%" }}>
+      <Example roundResult={roundResult}></Example>
+    </div>
+  );
 }

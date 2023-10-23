@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   AntColonyOptimization,
   AntColonyOptimizationOption,
-  AntColonyOptimizationResult,
   AntColonyOptimizationRoundResult,
   Vector,
   Vector3D,
-} from "@alsk1369854/ant-colony-optimization";
+} from "ant-colony-optimization-algorithm";
 
 export interface UseAntColonyOptimizationReturn {
   roundResult: AntColonyOptimizationRoundResult<Vector3D> | undefined;
   isRuning: boolean;
+  percent: number;
   calculate: (
     vectorList: Vector[],
     option?: AntColonyOptimizationOption
@@ -21,6 +21,7 @@ export function useAntColonyOptimization(): UseAntColonyOptimizationReturn {
   const [roundResult, setRoundResult] =
     useState<AntColonyOptimizationRoundResult<Vector3D>>();
   const [isRuning, setIsRuning] = useState<boolean>(false);
+  const [percent, setPercent] = useState<number>(0);
 
   function calculate(
     vectorList: Vector[],
@@ -31,11 +32,16 @@ export function useAntColonyOptimization(): UseAntColonyOptimizationReturn {
 
     setIsRuning(true);
 
+    const maximumRounds: number =
+      option?.maximumRounds ??
+      AntColonyOptimization.DEFAULT_OPTION_STATE.maximumRounds;
     option = {
       ...option,
       onRoundEnds: (result) => {
-        if (!result) return;
-        setRoundResult(result);
+        setPercent(
+          Math.ceil((result.lastRound.roundCount / maximumRounds) * 100)
+        );
+        setRoundResult(result.lastRound);
       },
     };
 
@@ -45,5 +51,5 @@ export function useAntColonyOptimization(): UseAntColonyOptimizationReturn {
     });
   }
 
-  return { roundResult, isRuning, calculate };
+  return { roundResult, percent, isRuning, calculate };
 }

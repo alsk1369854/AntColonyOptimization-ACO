@@ -9,21 +9,23 @@ import { Canvas } from "@react-three/fiber";
 import {
   AntColonyOptimizationResult,
   Vector3D,
-} from "@alsk1369854/ant-colony-optimization";
+} from "ant-colony-optimization-algorithm";
+
+import { UseAntColonyOptimizationReturn } from "../../hooks/useAntColonyOptimization";
 
 export interface IResultDisplayFrameProps {
-  result: AntColonyOptimizationResult<Vector3D> | undefined;
+  roundResult: UseAntColonyOptimizationReturn["roundResult"];
 }
 
 // const
 
-export default function Example({ result }: IResultDisplayFrameProps) {
+export default function Example({ roundResult }: IResultDisplayFrameProps) {
   const pointColor: string = "#354aa6";
   const lineColor: string = "#778ffc";
 
   return (
     <>
-      <Canvas style={{ height: "100vh", width: "100vw" }}>
+      <Canvas>
         <OrbitControls
           target={[0, 0.35, 0]}
           maxPolarAngle={1.45}
@@ -34,8 +36,8 @@ export default function Example({ result }: IResultDisplayFrameProps) {
           position={[0, 0, 120]}
         ></PerspectiveCamera>
 
-        {result ? (
-          result.historyBestTripResult.tripVectorList.map(
+        {roundResult ? (
+          roundResult.historyBestTripResult.tripVectorList.map(
             ({ x, y, z }, index) => {
               return (
                 <Sphere
@@ -51,9 +53,9 @@ export default function Example({ result }: IResultDisplayFrameProps) {
           <></>
         )}
 
-        {result ? (
+        {roundResult ? (
           <Line
-            points={result.historyBestTripResult.tripVectorList.map(
+            points={roundResult.historyBestTripResult.tripVectorList.map(
               ({ x, y, z }) => [x, y, z]
             )}
             color={lineColor}

@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { Button, Checkbox, Form, Input, InputNumber, Space } from "antd";
+import { Button, Flex, Form, InputNumber, Progress, Space } from "antd";
 import {
   AntColonyOptimization,
   AntColonyOptimizationOption,
   Vector3D,
-} from "@alsk1369854/ant-colony-optimization";
+} from "ant-colony-optimization-algorithm";
 import { UseAntColonyOptimizationReturn } from "../../hooks/useAntColonyOptimization";
 
 interface ISettingFormValue extends AntColonyOptimizationOption {
@@ -12,10 +12,12 @@ interface ISettingFormValue extends AntColonyOptimizationOption {
 }
 
 export interface ISettingFormFrameProps {
+  percent: UseAntColonyOptimizationReturn["percent"];
   calculate: UseAntColonyOptimizationReturn["calculate"];
 }
 
 export default function SettingFormFrame({
+  percent,
   calculate,
 }: ISettingFormFrameProps) {
   const initialValues: ISettingFormValue = {
@@ -24,7 +26,6 @@ export default function SettingFormFrame({
   };
 
   useEffect(() => {
-    // Some initialization logic here
     onFinish(initialValues);
   }, []);
 
@@ -37,7 +38,7 @@ export default function SettingFormFrame({
 
   function getRandomVectorList(
     length: number,
-    maxValue: number = 10
+    maxValue: number = 50
   ): Vector3D[] {
     let result: Vector3D[] = [];
     for (let i = 0; i < length; i++) {
@@ -52,7 +53,7 @@ export default function SettingFormFrame({
 
   return (
     <Form
-      name="設定表單"
+      name="參數設定表單"
       layout="vertical"
       onFinish={onFinish}
       initialValues={initialValues}
@@ -62,6 +63,8 @@ export default function SettingFormFrame({
         boxShadow: "2px 2px 2px 1px rgba(0, 0, 0, 0.2)",
       }}
     >
+      <h1>參數設定表單</h1>
+
       <Space>
         <Form.Item<ISettingFormValue>
           label="螞蟻數量"
@@ -139,6 +142,15 @@ export default function SettingFormFrame({
           開始計算
         </Button>
       </Form.Item>
+
+      <Flex justify="center" align="center">
+        <Progress
+          type="dashboard"
+          percent={percent}
+          size={300}
+          strokeColor={{ "0%": "#4676fb", "100%": "#7fc336" }}
+        />
+      </Flex>
     </Form>
   );
 }
