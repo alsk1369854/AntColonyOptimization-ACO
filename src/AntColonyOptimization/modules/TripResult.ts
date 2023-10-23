@@ -1,6 +1,6 @@
 import Vector from "../interfaces/Vector";
 
-export default class AntTripResult<V extends Vector> {
+export default class TripResult<V extends Vector> {
   public readonly tripVectorList: V[];
   public readonly tripIndexList: number[];
   public readonly distance: number;
@@ -42,10 +42,10 @@ export default class AntTripResult<V extends Vector> {
 
   /**
    * 比較結果是否較為優異
-   * @param antTripResult 比對的目標物件
+   * @param tripResult 比對的目標物件
    * @returns 是否優於目標物件
    */
-  public betterThen(antTripResult: AntTripResult<V>): boolean {
-    return this.distance < antTripResult.distance;
+  public betterThen(tripResult: TripResult<V>): boolean {
+    return this.distance < tripResult.distance;
   }
 }

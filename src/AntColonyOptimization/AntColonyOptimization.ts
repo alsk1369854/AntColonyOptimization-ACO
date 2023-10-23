@@ -1,9 +1,10 @@
 import AntColonyOptimizationOption from "./interfaces/AntColonyOptimizationOption";
 import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimizationOptionState";
-import AntTripResult from "./modules/AntTripResult";
+import TripResult from "./modules/TripResult";
 import Vector from "./interfaces/Vector";
-import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
+import AntColonyOptimizationRoundResult from "./interfaces/AntColonyOptimizationRoundResult";
 import Vector3D from "./interfaces/Vector3D";
+import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
 
 export default class AntColonyOptimization<V extends Vector> {
   /**
@@ -47,14 +48,9 @@ export default class AntColonyOptimization<V extends Vector> {
   private pheromoneMatrix: number[][];
 
   /**
-   * 每回合的歷史結果
-   */
-  private roundResultHistory: AntColonyOptimizationResult<V>[] = [];
-
-  /**
    * 螞蟻演算法計算結果
    */
-  private result: Promise<AntColonyOptimizationResult<V>>;
+  private result: Promise<AntColonyOptimizationResult<V> | undefined>;
 
   /**
    * 構造器
@@ -89,16 +85,10 @@ export default class AntColonyOptimization<V extends Vector> {
    * 獲得 螞蟻演算法計算結果
    * @returns 螞蟻演算法計算結果
    */
-  public async getResult(): Promise<AntColonyOptimizationResult<V>> {
+  public async getResult(): Promise<
+    AntColonyOptimizationResult<V> | undefined
+  > {
     return await this.result;
-  }
-
-  /**
-   * 獲得 當前進度的歷史回合結果
-   * @returns 當前進度的歷史回合結果
-   */
-  public getRoundResultHistory(): AntColonyOptimizationResult<V>[] {
-    return this.roundResultHistory;
   }
 
   /**
@@ -118,12 +108,15 @@ export default class AntColonyOptimization<V extends Vector> {
     pheromoneWeakeningRate: number,
     pheromoneIncrement: number,
     onRoundEnds: AntColonyOptimizationOptionState["onRoundEnds"] = () => {}
-  ): Promise<AntColonyOptimizationResult<V>> {
+  ): Promise<AntColonyOptimizationResult<V> | undefined> {
+    // 算法運行結果
     let result: AntColonyOptimizationResult<V> | undefined = undefined;
-    /**
-     * 最佳的螞蟻旅行結果
-     */
-    let bestAntTripResult: AntTripResult<V> | undefined = undefined;
+
+    // 每回合的歷史結果
+    let roundResultHistory: AntColonyOptimizationRoundResult<V>[] = [];
+
+    // 歷史最佳的螞蟻旅行結果
+    let historyBestTripResult: TripResult<V> | undefined = undefined;
 
     // 每回合
     for (let roundCount = 0; roundCount < maximumRounds; roundCount++) {
@@ -134,46 +127,48 @@ export default class AntColonyOptimization<V extends Vector> {
       );
 
       // 更新費洛蒙舉矩陣
-      const antsTripResultList: AntTripResult<V>[] = antsTripIndexList.map(
-        (antTripIndexList) => this.getAntTripResult(antTripIndexList)
+      const tripResultList: TripResult<V>[] = antsTripIndexList.map(
+        (antTripIndexList) => this.getTripResult(antTripIndexList)
       );
       this.pheromoneMatrix = this.getNextRoundPheromonMatrix(
-        antsTripResultList,
+        tripResultList,
         pheromoneWeakeningRate,
         pheromoneIncrement
       );
 
       // 更新歷史最佳解果
-      const roundBestAntTripResult: AntTripResult<V> =
-        this.getBestAntTripResult(antsTripResultList);
-      if (bestAntTripResult === undefined) {
-        bestAntTripResult = roundBestAntTripResult;
+      const roundBestTripResult: TripResult<V> =
+        this.getBestTripResult(tripResultList);
+      if (historyBestTripResult === undefined) {
+        historyBestTripResult = roundBestTripResult;
       } else {
-        if (roundBestAntTripResult.betterThen(bestAntTripResult)) {
-          bestAntTripResult = roundBestAntTripResult;
+        if (roundBestTripResult.betterThen(historyBestTripResult)) {
+          historyBestTripResult = roundBestTripResult;
         }
       }
 
-      // 更新結果
-      result = {
+      // 當前回合計算結果
+      const currentRoundResult: AntColonyOptimizationRoundResult<V> = {
         roundCount,
-        antsTripResultList,
-        roundBestAntTripResult,
-        bestAntTripResult,
+        tripResultList,
+        roundBestTripResult,
+        historyBestTripResult,
       };
-      this.roundResultHistory.push(result);
+      // 更新結果
+      roundResultHistory.push(currentRoundResult);
+      result = {
+        result: roundResultHistory[roundCount],
+        history: roundResultHistory,
+      };
 
       // 執行回合結束回調
-      onRoundEnds(
-        result as AntColonyOptimizationResult<Vector3D>,
-        this.roundResultHistory as AntColonyOptimizationResult<Vector3D>[]
-      );
+      onRoundEnds(result as AntColonyOptimizationResult<Vector3D>);
 
       // 讓任務進入宏任務，防止頁面渲染因計算變卡頓
       await this.sleep(0);
     }
 
-    return result as AntColonyOptimizationResult<V>;
+    return result;
   }
 
   /**
@@ -234,29 +229,27 @@ export default class AntColonyOptimization<V extends Vector> {
 
   /**
    * 獲取回合結果集中的最佳結果
-   * @param antsTripResultList 回合結果集
+   * @param tripResultList 回合結果集
    * @returns 最佳結果
    */
-  private getBestAntTripResult(
-    antsTripResultList: AntTripResult<V>[]
-  ): AntTripResult<V> {
-    return antsTripResultList.reduce((bestAntTripResult, antTripResult) => {
-      if (antTripResult.betterThen(bestAntTripResult)) {
+  private getBestTripResult(tripResultList: TripResult<V>[]): TripResult<V> {
+    return tripResultList.reduce((historyBestTripResult, antTripResult) => {
+      if (antTripResult.betterThen(historyBestTripResult)) {
         return antTripResult;
       }
-      return bestAntTripResult;
-    }, antsTripResultList[0]);
+      return historyBestTripResult;
+    }, tripResultList[0]);
   }
 
   /**
    * 獲取 下一回合的 費洛蒙矩陣
-   * @param antsTripResultList 此回合所有螞蟻的旅行結果
+   * @param tripResultList 此回合所有螞蟻的旅行結果
    * @param pheromoneWeakeningRate 費洛蒙衰退率 (0~1)
    * @param pheromoneIncrement 每隻螞蟻經過路徑費洛蒙增量 (增量 / 螞蟻行走距離)
    * @returns 下一回合的 費洛蒙矩陣
    */
   private getNextRoundPheromonMatrix(
-    antsTripResultList: AntTripResult<V>[],
+    tripResultList: TripResult<V>[],
     pheromoneWeakeningRate: number,
     pheromoneIncrement: number
   ): number[][] {
@@ -266,7 +259,7 @@ export default class AntColonyOptimization<V extends Vector> {
     );
 
     // 旅程路線增量
-    antsTripResultList.forEach((antTripResult) => {
+    tripResultList.forEach((antTripResult) => {
       const pheromoneIncrease: number =
         pheromoneIncrement / antTripResult.distance;
 
@@ -284,14 +277,14 @@ export default class AntColonyOptimization<V extends Vector> {
 
   /**
    * 獲取 螞蟻旅行結果
-   * @param antTripIndexList 螞蟻旅行經過的向量 index 途徑
+   * @param tripIndexList 螞蟻旅行經過的向量 index 途徑
    * @returns 螞蟻旅行結果
    */
-  private getAntTripResult(antTripIndexList: number[]): AntTripResult<V> {
-    return new AntTripResult<V>(
+  private getTripResult(tripIndexList: number[]): TripResult<V> {
+    return new TripResult<V>(
       this.vectorList as V[],
       this.distanceMatrix,
-      antTripIndexList
+      tripIndexList
     );
   }
 

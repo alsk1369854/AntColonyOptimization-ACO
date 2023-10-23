@@ -1,6 +1,6 @@
 # AntColonyOptimization-ACO
 
-[![npm version](https://img.shields.io/npm/v/@alsk1369854/ant-colony-optimization)](https://www.npmjs.com/package/@alsk1369854/ant-colony-optimization) [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=@alsk1369854/ant-colony-optimization&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=@alsk1369854/ant-colony-optimization) ![check-code-coverage](https://img.shields.io/badge/code--coverage-97.01%25-brightgreen) ![npm type definitions](https://img.shields.io/npm/types/@alsk1369854/ant-colony-optimization) ![NPM](https://img.shields.io/npm/l/@alsk1369854/ant-colony-optimization)
+[![npm version](https://img.shields.io/npm/v/@alsk1369854/ant-colony-optimization)](https://www.npmjs.com/package/@alsk1369854/ant-colony-optimization) [![install size](https://img.shields.io/badge/dynamic/json?url=https://packagephobia.com/v2/api.json?p=@alsk1369854/ant-colony-optimization&query=$.install.pretty&label=install%20size&style=flat-square)](https://packagephobia.now.sh/result?p=@alsk1369854/ant-colony-optimization) ![check-code-coverage](https://img.shields.io/badge/code--coverage-97.76%25-brightgreen) ![npm type definitions](https://img.shields.io/npm/types/@alsk1369854/ant-colony-optimization) ![NPM](https://img.shields.io/npm/l/@alsk1369854/ant-colony-optimization)
 
 Ant colony optimization algorithm
 
@@ -79,10 +79,9 @@ aco.getResult().then((result) => console.log(result));
 
 ### Methods
 
-| Methods                                                   | Description                |
-| --------------------------------------------------------- | -------------------------- |
-| async getResult():Promise<AntColonyOptimizationResult<V>> | 獲得螞蟻演算法計算結果     |
-| getRoundResultHistory():AntColonyOptimizationResult<V>[]  | 獲得當前進度的歷史回合結果 |
+| Methods                                                   | Description            |
+| --------------------------------------------------------- | ---------------------- |
+| async getResult():Promise<AntColonyOptimizationResult<V>> | 獲得螞蟻演算法計算結果 |
 
 ## AntColonyOptimizationOption API
 

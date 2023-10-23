@@ -1,5 +1,5 @@
-import Vector3D from "./Vector3D";
 import AntColonyOptimizationResult from "./AntColonyOptimizationResult";
+import Vector3D from "./Vector3D";
 
 export default interface AntColonyOptimizationOptionState {
   /**
@@ -14,14 +14,9 @@ export default interface AntColonyOptimizationOptionState {
 
   /**
    * [回調] 回每合結束時
-   * @param roundResult 當前回合結果
-   * @param roundResultHistory 歷史回合解果
-   * @returns 是否中斷計算
+   * @param result 當前計算結果訊息
    */
-  onRoundEnds: (
-    result: AntColonyOptimizationResult<Vector3D>,
-    roundResultHistory: AntColonyOptimizationResult<Vector3D>[]
-  ) => boolean | void;
+  onRoundEnds: (result: AntColonyOptimizationResult<Vector3D>) => void;
 
   /**
    * 初始費洛蒙

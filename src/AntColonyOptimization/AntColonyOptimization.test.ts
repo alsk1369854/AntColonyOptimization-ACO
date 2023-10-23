@@ -1,7 +1,7 @@
 import AntColonyOptimization from "./AntColonyOptimization";
 import AntColonyOptimizationOption from "./interfaces/AntColonyOptimizationOption";
 import AntColonyOptimizationOptionState from "./interfaces/AntColonyOptimizationOptionState";
-import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationResult";
+import AntColonyOptimizationResult from "./interfaces/AntColonyOptimizationRoundResult";
 import Vector3D from "./interfaces/Vector3D";
 
 function getRandomVectorList(
@@ -31,22 +31,6 @@ describe("AntColonyOptimization test", () => {
     // 獲得運算結果
     aco.getResult().then((result) => {
       expect(typeof result).toBe("object");
-    });
-  });
-
-  test("測試方法 getRoundResultHistory", () => {
-    // 向量序列
-    const vectorList: Vector3D[] = getRandomVectorList(10);
-
-    // 蟻群優化算法
-    const aco: AntColonyOptimization<Vector3D> = new AntColonyOptimization(
-      vectorList
-    );
-    // 獲得運算結果
-    aco.getResult().then((result) => {
-      const RoundResultHistory: AntColonyOptimizationResult<Vector3D>[] =
-        aco.getRoundResultHistory();
-      expect(Array.isArray(RoundResultHistory)).toBeTruthy();
     });
   });
 
