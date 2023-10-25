@@ -1,20 +1,18 @@
 import React from "react";
-import ResultDisplayFrame from "../../components/ResultDisplayFrame";
-import SettingFormFrame from "../../components/SettingFormFrame";
+import SettingFormFrame from "../../components/SideBarFrame/components/SettingFormFrame";
 import { Flex } from "antd";
 import { useAntColonyOptimization } from "../../hooks/useAntColonyOptimization";
+import CanvasDisplayFrame from "../../components/CanvasDisplayFrame";
+import SideBarFrame from "../../components/SideBarFrame";
 
 export default function MainPage() {
   const { roundResult, percent, calculate } = useAntColonyOptimization();
 
   return (
     <Flex style={{ height: "100vh", width: "100vw" }}>
-      <SettingFormFrame
-        calculate={calculate}
-        percent={percent}
-      ></SettingFormFrame>
+      <SideBarFrame percent={percent} calculate={calculate}></SideBarFrame>
 
-      <ResultDisplayFrame roundResult={roundResult}></ResultDisplayFrame>
+      <CanvasDisplayFrame roundResult={roundResult}></CanvasDisplayFrame>
     </Flex>
   );
 }
